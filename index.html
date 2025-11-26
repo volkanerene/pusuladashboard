@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Görev Tablosu</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      background: #f5f5f7;
+      color: #111827;
+    }
+    header {
+      padding: 1rem 1.5rem;
+      background: #111827;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .container {
+      padding: 1.5rem;
+    }
+    .card {
+      background: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 10px 25px rgba(15,23,42,0.08);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .login-card {
+      max-width: 360px;
+      margin: 6rem auto;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      margin-bottom: 0.25rem;
+      color: #4b5563;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 0.5rem 0.6rem;
+      border-radius: 0.5rem;
+      border: 1px solid #d1d5db;
+      font-size: 0.9rem;
+      box-sizing: border-box;
+    }
+    input[type="text"]:focus, input[type="password"]:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px #2563eb22;
+    }
+    button {
+      border-radius: 0.5rem;
+      border: none;
+      padding: 0.45rem 0.75rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+    }
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid #e5e7eb;
+      color: #4b5563;
+    }
+    .btn-primary:hover {
+      background: #1d4ed8;
+    }
+    .btn-secondary:hover {
+      background: #d1d5db;
+    }
+    .btn-ghost:hover {
+      background: #f3f4f6;
+    }
+    .flex {
+      display: flex;
+      align-items: center;
+    }
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .flex-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+    }
+    .gap-sm { gap: 0.5rem; }
+    .mt-sm { margin-top: 0.5rem; }
+    .mt-md { margin-top: 1rem; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+    }
+    thead {
+      background: #f9fafb;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    th, td {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0.4rem 0.5rem;
+      text-align: left;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    th {
+      font-weight: 600;
+      color: #374151;
+    }
+    tr:nth-child(even) td {
+      background: #f9fafb;
+    }
+    .input-cell {
+      width: 140px;
+    }
+    .input-cell input[type="text"],
+    .input-cell input[type="number"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.25rem 0.35rem;
+      font-size: 0.78rem;
+      border-radius: 0.35rem;
+      border: 1px solid #d1d5db;
+    }
+    .input-cell input:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px #2563eb22;
+    }
+    .checkbox-cell {
+      text-align: center;
+    }
+    .copy-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .copy-wrapper input {
+      flex: 1;
+    }
+    .copy-toast {
+      position: fixed;
+      right: 1rem;
+      bottom: 1rem;
+      background: #111827;
+      color: white;
+      padding: 0.6rem 0.9rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+      transform: translateY(10px);
+      z-index: 50;
+    }
+    .copy-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .hidden {
+      display: none !important;
+    }
+    @media (max-width: 900px) {
+      table {
+        font-size: 0.72rem;
+      }
+      .input-cell { width: 110px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen">
+    <div class="login-card card">
+      <h2 style="margin-top:0;margin-bottom:0.75rem;">Görev Tablosu Giriş</h2>
+      <p style="font-size:0.85rem;color:#6b7280;margin-bottom:1rem;">
+        Basit bir internal login. Şimdilik kontrol yok, sadece “giriş” için.
+      </p>
+      <div class="mt-sm">
+        <label>Kullanıcı Adı</label>
+        <input type="text" id="login-username" placeholder="örn. volkan" />
+      </div>
+      <div class="mt-sm">
+        <label>Şifre</label>
+        <input type="password" id="login-password" placeholder="••••••••" />
+      </div>
+      <div class="mt-md flex-between">
+        <button class="btn-secondary" type="button" onclick="fakeFill();">Doldur</button>
+        <button class="btn-primary" type="button" onclick="login();">Giriş Yap</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP SCREEN -->
+  <div id="app-screen" class="hidden">
+    <header>
+      <div>
+        <div style="font-weight:600;">Görev Takip Paneli</div>
+        <div style="font-size:0.75rem;color:#9ca3af;">Para Atma ve Çevrim Görevleri</div>
+      </div>
+      <div class="flex gap-sm">
+        <span id="current-user" class="badge"></span>
+        <button class="btn-ghost" onclick="logout();">Çıkış</button>
+      </div>
+    </header>
+
+    <div class="container">
+      <!-- Controls -->
+      <div class="card">
+        <div class="flex-between">
+          <div>
+            <div style="font-size:0.9rem;font-weight:600;">Tablo Kontrolleri</div>
+            <div style="font-size:0.8rem;color:#6b7280;">
+              Yeni satır ekleyebilir, belirli sütunları gizleyip gösterebilirsin.
+            </div>
+          </div>
+          <div class="flex gap-sm">
+            <button class="btn-primary" type="button" onclick="addRow();">+ Yeni Satır</button>
+          </div>
+        </div>
+
+        <div class="mt-md">
+          <div style="font-size:0.8rem;font-weight:600;margin-bottom:0.25rem;">Sütun Görünürlüğü</div>
+          <div id="column-toggles" class="flex-wrap"></div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="card" style="overflow:auto;max-height:70vh;">
+        <table id="task-table">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="copy-toast" class="copy-toast">Kopyalandı</div>
+
+  <script>
+    // --- DATA MODEL ---
+
+    const columns = [
+      { key: "username", label: "Kullanıcı Adı", type: "text" },
+      { key: "email", label: "Mail", type: "email" },
+      { key: "phone", label: "Numara", type: "text" },
+      { key: "pin", label: "4 Haneli PIN", type: "text" },
+      { key: "fullName", label: "Ad Soyad", type: "text" },
+      { key: "passwordNote", label: "Şifre Notu / Onay", type: "text" },
+      { key: "outlookExtra", label: "Outlook Ekstra Numara", type: "text" },
+      { key: "defaultDepositOwner", label: "Varsayılan Para Atma Sorumlusu", type: "text" },
+      { key: "defaultTurnoverOwner", label: "Varsayılan Çevrim Sorumlusu", type: "text" },
+
+      // Örnek olarak sadece Pazartesi sütunları ekledim. İstersen aynısını Salı, Çarş vb. için çoğaltırsın.
+      { key: "monDepositDone", label: "Pzt Para Atıldı mı?", type: "checkbox" },
+      { key: "monDepositBy", label: "Pzt Para Atan Kişi", type: "text" },
+      { key: "monTurnoverDone", label: "Pzt Çevrim Yapıldı mı?", type: "checkbox" },
+      { key: "monTurnoverBy", label: "Pzt Çevrim Yapan Kişi", type: "text" },
+      { key: "monProfit", label: "Pzt Kâr", type: "number" }
+    ];
+
+    let visibleColumns = new Set(columns.map(c => c.key));
+    let rows = []; // her satır bir obje
+
+    // --- LOGIN ---
+
+    function fakeFill() {
+      document.getElementById("login-username").value = "volkan";
+      document.getElementById("login-password").value = "1234";
+    }
+
+    function login() {
+      const u = document.getElementById("login-username").value || "Kullanıcı";
+      document.getElementById("current-user").textContent = "Giriş: " + u;
+      document.getElementById("login-screen").classList.add("hidden");
+      document.getElementById("app-screen").classList.remove("hidden");
+      initApp();
+    }
+
+    function logout() {
+      document.getElementById("app-screen").classList.add("hidden");
+      document.getElementById("login-screen").classList.remove("hidden");
+    }
+
+    // --- APP INIT ---
+
+    function initApp() {
+      // örnek bir satır
+      rows = [
+        {
+          username: "user01",
+          email: "user01@example.com",
+          phone: "5300000000",
+          pin: "1234",
+          fullName: "Test Kullanıcı",
+          passwordNote: "Tamam",
+          outlookExtra: "",
+          defaultDepositOwner: "Ali",
+          defaultTurnoverOwner: "Ayşe",
+          monDepositDone: false,
+          monDepositBy: "",
+          monTurnoverDone: false,
+          monTurnoverBy: "",
+          monProfit: ""
+        }
+      ];
+      renderColumnToggles();
+      renderTable();
+    }
+
+    // --- COLUMN TOGGLES ---
+
+    function renderColumnToggles() {
+      const wrap = document.getElementById("column-toggles");
+      wrap.innerHTML = "";
+      columns.forEach(col => {
+        const id = "toggle-" + col.key;
+        const label = document.createElement("label");
+        label.className = "flex gap-sm";
+        label.style.fontSize = "0.78rem";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = visibleColumns.has(col.key);
+        checkbox.id = id;
+        checkbox.onchange = () => {
+          if (checkbox.checked) visibleColumns.add(col.key);
+          else visibleColumns.delete(col.key);
+          renderTable();
+        };
+
+        const span = document.createElement("span");
+        span.textContent = col.label;
+
+        label.appendChild(checkbox);
+        label.appendChild(span);
+        wrap.appendChild(label);
+      });
+    }
+
+    // --- TABLE RENDER ---
+
+    function renderTable() {
+      const table = document.getElementById("task-table");
+      const thead = table.querySelector("thead");
+      const tbody = table.querySelector("tbody");
+      thead.innerHTML = "";
+      tbody.innerHTML = "";
+
+      // Header
+      const trHead = document.createElement("tr");
+      columns.forEach(col => {
+        if (!visibleColumns.has(col.key)) return;
+        const th = document.createElement("th");
+        th.textContent = col.label;
+        trHead.appendChild(th);
+      });
+      thead.appendChild(trHead);
+
+      // Body
+      rows.forEach((row, rowIndex) => {
+        const tr = document.createElement("tr");
+        columns.forEach(col => {
+          if (!visibleColumns.has(col.key)) return;
+          const td = document.createElement("td");
+
+          if (col.type === "checkbox") {
+            td.className = "checkbox-cell";
+            const input = document.createElement("input");
+            input.type = "checkbox";
+            input.checked = !!row[col.key];
+            input.onchange = () => {
+              rows[rowIndex][col.key] = input.checked;
+            };
+            td.appendChild(input);
+          } else {
+            td.className = "input-cell";
+
+            // Mail için özel: input + copy butonu
+            if (col.key === "email") {
+              const wrap = document.createElement("div");
+              wrap.className = "copy-wrapper";
+
+              const input = document.createElement("input");
+              input.type = "text";
+              input.value = row[col.key] || "";
+              input.oninput = () => {
+                rows[rowIndex][col.key] = input.value;
+              };
+
+              const btn = document.createElement("button");
+              btn.type = "button";
+              btn.className = "btn-ghost";
+              btn.style.padding = "0.2rem 0.4rem";
+              btn.style.fontSize = "0.7rem";
+              btn.textContent = "Kopyala";
+              btn.onclick = () => copyToClipboard(input.value);
+
+              wrap.appendChild(input);
+              wrap.appendChild(btn);
+              td.appendChild(wrap);
+            } else {
+              const input = document.createElement("input");
+              input.type = col.type === "number" ? "number" : "text";
+              input.value = row[col.key] || "";
+              input.oninput = () => {
+                rows[rowIndex][col.key] = input.value;
+              };
+              td.appendChild(input);
+            }
+          }
+
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+    }
+
+    // --- ROW ACTIONS ---
+
+    function addRow() {
+      const emptyRow = {};
+      columns.forEach(col => {
+        emptyRow[col.key] = col.type === "checkbox" ? false : "";
+      });
+      rows.push(emptyRow);
+      renderTable();
+    }
+
+    // --- COPY TO CLIPBOARD ---
+
+    function copyToClipboard(text) {
+      if (!text) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(showCopyToast);
+      } else {
+        // fallback
+        const tmp = document.createElement("textarea");
+        tmp.value = text;
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand("copy");
+        document.body.removeChild(tmp);
+        showCopyToast();
+      }
+    }
+
+    function showCopyToast() {
+      const toast = document.getElementById("copy-toast");
+      toast.classList.add("show");
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 1200);
+    }
+  </script>
+</body>
+</html>
