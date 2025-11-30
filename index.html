@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Görev Tablosu</title>
+  <title>pusuladashboard - Görev Tablosu</title>
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -21,6 +21,33 @@
     .container {
       padding: 1.5rem;
     }
+    .subnav {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .subnav button {
+      border: 1px solid #e5e7eb;
+      background: white;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      color: #4b5563;
+    }
+    .subnav button.active {
+      background: #111827;
+      color: white;
+      border-color: #111827;
+    }
+    .subnav button.add-board-btn {
+      border-style: dashed;
+      color: #2563eb;
+    }
+    .subnav button.add-board-btn:hover {
+      background: #eff6ff;
+    }
     .card {
       background: white;
       border-radius: 0.75rem;
@@ -38,7 +65,7 @@
       margin-bottom: 0.25rem;
       color: #4b5563;
     }
-    input[type="text"], input[type="password"] {
+    input[type="text"], input[type="password"], input[type="number"] {
       width: 100%;
       padding: 0.5rem 0.6rem;
       border-radius: 0.5rem;
@@ -46,7 +73,9 @@
       font-size: 0.9rem;
       box-sizing: border-box;
     }
-    input[type="text"]:focus, input[type="password"]:focus {
+    input[type="text"]:focus,
+    input[type="password"]:focus,
+    input[type="number"]:focus {
       outline: none;
       border-color: #2563eb;
       box-shadow: 0 0 0 1px #2563eb22;
@@ -110,6 +139,7 @@
       color: #374151;
     }
 
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -156,13 +186,109 @@
     .checkbox-cell {
       text-align: center;
     }
-    .copy-wrapper {
+    .table-actions {
+      min-width: 48px;
+      width: 48px;
+      flex-direction: column;
+      gap: 0.2rem;
+      align-items: center;
+      justify-content: center;
+      padding: 0 !important;
+    }
+    .btn-icon {
+      padding: 0.25rem 0.6rem;
+      font-size: 0.75rem;
+      border-radius: 0.4rem;
+    }
+    .owned-row td {
+      background: #fff7ed !important;
+    }
+    .cell-wrapper {
       display: flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: 0.35rem;
     }
-    .copy-wrapper input {
+    .cell-wrapper select,
+    .cell-wrapper input[type="text"],
+    .cell-wrapper input[type="number"] {
       flex: 1;
+      min-width: 0;
+    }
+    .cell-display {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .edit-icon {
+      border: none;
+      background: transparent;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 0.05rem 0.2rem;
+      border-radius: 0.35rem;
+      font-size: 0.75rem;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .edit-icon:hover {
+      background: #e5e7eb;
+    }
+    .edit-icon:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+    .cell-checked select {
+      background: #dcfce7;
+      border-color: #22c55e;
+      color: #166534;
+      font-weight: 600;
+    }
+    td.day-complete {
+      background: #ecfdf5 !important;
+      position: relative;
+    }
+    .copyable {
+      cursor: pointer;
+    }
+    .copyable:hover {
+      color: #1d4ed8;
+    }
+    .schema-warning {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+      border-radius: 0.5rem;
+      padding: 0.45rem 0.75rem;
+      font-size: 0.78rem;
+      margin-top: 0.5rem;
+    }
+    .missing-column {
+      background: #fff7ed;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+    .stat-block {
+      background: #f9fafb;
+      border-radius: 0.6rem;
+      padding: 0.85rem;
+      border: 1px solid #f3f4f6;
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+    .stat-value {
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: #111827;
+      margin-top: 0.2rem;
     }
     .copy-toast {
       position: fixed;
@@ -199,20 +325,20 @@
   <!-- LOGIN SCREEN -->
   <div id="login-screen">
     <div class="login-card card">
-      <h2 style="margin-top:0;margin-bottom:0.75rem;">Görev Tablosu Giriş</h2>
+      <h2 style="margin-top:0;margin-bottom:0.75rem;">pusuladashboard Giriş</h2>
       <p style="font-size:0.85rem;color:#6b7280;margin-bottom:1rem;">
-        Basit bir internal login. Şimdilik kontrol yok, sadece “giriş” için.
+        Sadece yetkili 6 kullanıcının mail/şifresi ile giriş yapılabilir.
       </p>
       <div class="mt-sm">
-        <label>Kullanıcı Adı</label>
-        <input type="text" id="login-username" placeholder="örn. volkan" />
+        <label>Mail</label>
+        <input type="text" id="login-username" placeholder="ornek@mail.com" />
       </div>
       <div class="mt-sm">
         <label>Şifre</label>
         <input type="password" id="login-password" placeholder="••••••••" />
       </div>
       <div class="mt-md flex-between">
-        <button class="btn-secondary" type="button" onclick="fakeFill();">Doldur</button>
+        <div style="font-size:0.8rem;color:#9ca3af;">Supabase Auth ile kontrol ediliyor</div>
         <button class="btn-primary" type="button" onclick="login();">Giriş Yap</button>
       </div>
     </div>
@@ -222,8 +348,8 @@
   <div id="app-screen" class="hidden">
     <header>
       <div>
-        <div style="font-weight:600;">Görev Takip Paneli</div>
-        <div style="font-size:0.75rem;color:#9ca3af;">Para Atma ve Çevrim Görevleri</div>
+        <div style="font-weight:600;">pusuladashboard</div>
+        <div style="font-size:0.75rem;color:#9ca3af;">Para Atma ve Çevrim Görev Paneli</div>
       </div>
       <div class="flex gap-sm">
         <span id="current-user" class="badge"></span>
@@ -232,24 +358,62 @@
     </header>
 
     <div class="container">
+      <div class="subnav" id="board-nav"></div>
+
+      <!-- Stats -->
+      <div class="card" id="stats-card">
+        <div class="flex-between">
+          <div>
+            <div style="font-size:0.9rem;font-weight:600;">Haftalık İstatistikler</div>
+            <div style="font-size:0.78rem;color:#6b7280;">Tüm değerler Supabase verilerinden hesaplanır</div>
+          </div>
+          <div class="badge">Güncellenen Hafta: <span id="stats-week-label" style="margin-left:0.25rem;"></span></div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-block">
+            <div class="stat-label">Toplam Hesap</div>
+            <div class="stat-value" id="stat-total-rows">0</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-label">Bugün Para Atıldı</div>
+            <div class="stat-value" id="stat-today-deposit">0</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-label">Bugün Çevrim Yapıldı</div>
+            <div class="stat-value" id="stat-today-turnover">0</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-label">Bu Hafta Kâr</div>
+            <div class="stat-value" id="stat-week-profit">₺0</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Controls -->
       <div class="card">
         <div class="flex-between">
           <div>
             <div style="font-size:0.9rem;font-weight:600;">Tablo Kontrolleri</div>
             <div style="font-size:0.8rem;color:#6b7280;">
-              Yeni satır ekleyebilir, belirli sütunları gizleyip gösterebilirsin.
+              Yeni satır ekleyebilir, belirli sütunları gizleyip gösterebilirsin. Tüm veriler Supabase DB'ye kaydedilir.
             </div>
+            <div id="week-range" style="font-size:0.78rem;color:#4b5563;margin-top:0.25rem;"></div>
           </div>
           <div class="flex gap-sm">
             <button class="btn-primary" type="button" onclick="addRow();">+ Yeni Satır</button>
+            <button class="btn-secondary" type="button" id="column-toggle-btn" onclick="toggleColumnControls();">Sütun Gruplarını Göster</button>
           </div>
         </div>
 
-        <div class="mt-md">
-          <div style="font-size:0.8rem;font-weight:600;margin-bottom:0.25rem;">Sütun Görünürlüğü</div>
+        <div id="column-controls" class="mt-md hidden">
+          <div style="font-size:0.8rem;font-weight:600;margin-bottom:0.25rem;">Sütun Grupları</div>
           <div id="column-toggles" class="flex-wrap"></div>
         </div>
+        <div style="font-size:0.75rem;color:#6b7280;margin-top:0.5rem;">
+          Her hücredeki kalem ikonuna basarak sadece o bilgiyi düzenleyebilirsin. Varsayılan Para/Çevrim sorumlularından biri
+          seçilirse o haftanın tüm günleri otomatik aynı kişiye atanır; istersen günleri tek tek değiştirebilirsin.
+        </div>
+        <div id="schema-warning" class="schema-warning hidden"></div>
       </div>
 
       <!-- Table -->
@@ -264,100 +428,404 @@
 
   <div id="copy-toast" class="copy-toast">Kopyalandı</div>
 
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
-    // --- DATA MODEL ---
+    // ---- SUPABASE CONFIG ----
+    const SUPABASE_URL = "https://kqyjgaqzrowqvxllquss.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxeWpnYXF6cm93cXZ4bGxxdXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNTgzODgsImV4cCI6MjA3OTczNDM4OH0.F4OzNZ1e6JsLaNr7rJaPsN7UzjUeKgnlB4aUQEOXSew";
 
-    const columns = [
-      { key: "username", label: "Kullanıcı Adı", type: "text" },
-      { key: "email", label: "Mail", type: "email" },
-      { key: "phone", label: "Numara", type: "text" },
-      { key: "pin", label: "4 Haneli PIN", type: "text" },
-      { key: "fullName", label: "Ad Soyad", type: "text" },
-      { key: "passwordNote", label: "Şifre Notu / Onay", type: "text" },
-      { key: "outlookExtra", label: "Outlook Ekstra Numara", type: "text" },
-      { key: "defaultDepositOwner", label: "Varsayılan Para Atma Sorumlusu", type: "text" },
-      { key: "defaultTurnoverOwner", label: "Varsayılan Çevrim Sorumlusu", type: "text" },
+    const { createClient } = window.supabase;
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      // Örnek olarak sadece Pazartesi sütunları ekledim. İstersen aynısını Salı, Çarş vb. için çoğaltırsın.
-      { key: "monDepositDone", label: "Pzt Para Atıldı mı?", type: "checkbox" },
-      { key: "monDepositBy", label: "Pzt Para Atan Kişi", type: "text" },
-      { key: "monTurnoverDone", label: "Pzt Çevrim Yapıldı mı?", type: "checkbox" },
-      { key: "monTurnoverBy", label: "Pzt Çevrim Yapan Kişi", type: "text" },
-      { key: "monProfit", label: "Pzt Kâr", type: "number" }
+    // ---- TEAM CONFIG ----
+    const TEAM_MEMBERS = [
+      { name: "Berk", email: "", role: "member" },
+      { name: "Volkan", email: "volkanerenee@gmail.com", role: "admin" },
+      { name: "Uğurcan", email: "", role: "member" },
+      { name: "Bera", email: "", role: "member" },
+      { name: "Bora", email: "", role: "member" },
+      { name: "Rahmet", email: "", role: "member" }
+    ];
+    const RESPONSIBLE_OPTIONS = TEAM_MEMBERS.map(member => member.name);
+
+    // ---- DATA MODEL ----
+    // Key'ler Supabase tablosundaki kolon isimleriyle birebir uyumlu:
+    const baseColumns = [
+      { key: "username",               label: "Kullanıcı Adı",                  type: "text" },
+      { key: "email",                  label: "Mail",                           type: "text" },
+      { key: "phone",                  label: "Numara",                         type: "text" },
+      { key: "pin",                    label: "4 Haneli PIN",                   type: "text" },
+      { key: "full_name",              label: "Ad Soyad",                       type: "text" },
+      { key: "password_note",          label: "Şifre Notu / Onay",              type: "text" },
+      { key: "outlook_extra",          label: "Outlook Ekstra Numara",          type: "text" },
+      { key: "default_deposit_owner",  label: "Para Atan", type: "text" },
+      { key: "default_turnover_owner", label: "Çevrimci",    type: "text" }
     ];
 
-    let visibleColumns = new Set(columns.map(c => c.key));
-    let rows = []; // her satır bir obje
+    const dayConfigs = [
+      { prefix: "tue", shortLabel: "Sal" },
+      { prefix: "wed", shortLabel: "Çar" },
+      { prefix: "thu", shortLabel: "Per" },
+      { prefix: "fri", shortLabel: "Cum" },
+      { prefix: "sat", shortLabel: "Cmt" },
+      { prefix: "sun", shortLabel: "Paz" },
+      { prefix: "mon", shortLabel: "Pzt" }
+    ];
 
-    // --- LOGIN ---
+    const DEFAULT_BOARDS = [
+      { id: "pusula", label: "Pusula" },
+      { id: "hesaplar", label: "Hesaplar" }
+    ];
+    const BOARD_STORAGE_KEY = "pusula-active-board";
+    const CUSTOM_BOARDS_KEY = "pusula-custom-boards";
+    let customBoards = loadCustomBoards();
+    let boards = [...DEFAULT_BOARDS, ...customBoards];
+    let currentBoard = getInitialBoard();
 
-    function fakeFill() {
-      document.getElementById("login-username").value = "volkan";
-      document.getElementById("login-password").value = "1234";
+    let currentWeekMeta = null;
+    let columns = [];
+    let groupDefinitions = [];
+    const ALWAYS_VISIBLE_KEYS = new Set(["email"]);
+    initializeWeekAndColumns();
+
+    let visibleColumns = new Set();
+    initializeDefaultVisibility();
+    ensureAlwaysVisibleColumns();
+    let allRows = []; // Supabase'ten gelen tüm satırlar
+    let rows = []; // Mevcut kullanıcıya gösterilen satırlar
+    let availableColumnKeys = new Set();
+    let missingColumnLabels = [];
+    let currentUserMeta = null;
+    let editingCell = null;
+    let columnControlsVisible = false;
+
+    function initializeWeekAndColumns() {
+      currentWeekMeta = getCurrentWeekMeta();
+      columns = createColumnsForCurrentWeek();
+      groupDefinitions = createGroupDefinitions();
+      const weekText = currentWeekMeta ? currentWeekMeta.rangeText : "";
+      const rangeEl = document.getElementById("week-range");
+      const statsLabelEl = document.getElementById("stats-week-label");
+      if (rangeEl) rangeEl.textContent = weekText ? "Bu Hafta: " + weekText : "";
+      if (statsLabelEl) statsLabelEl.textContent = weekText;
     }
 
-    function login() {
-      const u = document.getElementById("login-username").value || "Kullanıcı";
-      document.getElementById("current-user").textContent = "Giriş: " + u;
-      document.getElementById("login-screen").classList.add("hidden");
-      document.getElementById("app-screen").classList.remove("hidden");
-      initApp();
+    function getCurrentWeekMeta() {
+      const today = new Date();
+      const currentDay = today.getDay();
+      const startDayIndex = 2; // Salı
+      const startDate = new Date(today);
+      startDate.setHours(0, 0, 0, 0);
+      const daysSinceStart = (currentDay + 7 - startDayIndex) % 7;
+      startDate.setDate(today.getDate() - daysSinceStart);
+
+      const weekDates = dayConfigs.map((_, index) => {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + index);
+        return date;
+      });
+
+      const formatRange = date => date.toLocaleDateString("tr-TR", { day: "2-digit", month: "short" });
+      const rangeText = `${formatRange(weekDates[0])} - ${formatRange(weekDates[weekDates.length - 1])}`;
+      const todayMidnight = new Date(today);
+      todayMidnight.setHours(0, 0, 0, 0);
+      const yesterdayMidnight = new Date(todayMidnight);
+      yesterdayMidnight.setDate(todayMidnight.getDate() - 1);
+
+      const todayIndex = weekDates.findIndex(date => isSameDay(date, todayMidnight));
+      const yesterdayIndex = weekDates.findIndex(date => isSameDay(date, yesterdayMidnight));
+
+      return { weekDates, rangeText, todayIndex, yesterdayIndex };
     }
 
-    function logout() {
+    function getTodayPrefix() {
+      const index = currentWeekMeta && currentWeekMeta.todayIndex >= 0
+        ? currentWeekMeta.todayIndex
+        : 0;
+      return dayConfigs[index] ? dayConfigs[index].prefix : null;
+    }
+
+    function formatDateLabel(date) {
+      return date.toLocaleDateString("tr-TR", { day: "2-digit", month: "short" });
+    }
+
+    function isSameDay(a, b) {
+      return (
+        a.getFullYear() === b.getFullYear() &&
+        a.getMonth() === b.getMonth() &&
+        a.getDate() === b.getDate()
+      );
+    }
+
+    function createColumnsForCurrentWeek() {
+      const dayColumns = dayConfigs.flatMap((day, index) => {
+        const dateLabel = formatDateLabel(currentWeekMeta.weekDates[index]);
+        const baseLabel = `${day.shortLabel} (${dateLabel})`;
+        return [
+          { key: `${day.prefix}_deposit_done`,  label: `Para Atıldı mı?`,     type: "checkbox" },
+          { key: `${day.prefix}_deposit_by`,    label: `Para Atan Kişi`,      type: "text"     },
+          { key: `${day.prefix}_turnover_done`, label: `Çevrim Yapıldı mı?`, type: "checkbox" },
+          { key: `${day.prefix}_turnover_by`,   label: `Çevrim Yapan Kişi`,   type: "text"     },
+          { key: `${day.prefix}_profit`,        label: `Kâr`,                 type: "number"   }
+        ];
+      });
+
+      return [...baseColumns, ...dayColumns];
+    }
+
+    function createGroupDefinitions() {
+      const generalGroup = {
+        key: "general",
+        label: "Genel Bilgiler",
+        columns: baseColumns.map(col => col.key),
+        isDayGroup: false
+      };
+
+      const dayGroups = dayConfigs.map((day, index) => {
+        const dateLabel = formatDateLabel(currentWeekMeta.weekDates[index]);
+        return {
+          key: day.prefix,
+          label: `${day.shortLabel} (${dateLabel})`,
+          columns: [
+            `${day.prefix}_deposit_done`,
+            `${day.prefix}_deposit_by`,
+            `${day.prefix}_turnover_done`,
+            `${day.prefix}_turnover_by`,
+            `${day.prefix}_profit`
+          ],
+          isDayGroup: true,
+          dayIndex: index
+        };
+      });
+
+      return [generalGroup, ...dayGroups];
+    }
+
+    function initializeDefaultVisibility() {
+      groupDefinitions.forEach(group => {
+        if (shouldGroupBeVisibleByDefault(group)) {
+          group.columns.forEach(key => visibleColumns.add(key));
+        }
+      });
+    }
+
+    function shouldGroupBeVisibleByDefault(group) {
+      if (group.key === "general") return false;
+      if (group.isDayGroup) {
+        const targetIndex = currentWeekMeta.todayIndex >= 0 ? currentWeekMeta.todayIndex : 0;
+        return group.dayIndex === targetIndex;
+      }
+      return false;
+    }
+
+    function ensureAlwaysVisibleColumns() {
+      ALWAYS_VISIBLE_KEYS.forEach(key => visibleColumns.add(key));
+    }
+
+    // ---- LOGIN ----
+    async function login() {
+      const email = document.getElementById("login-username").value.trim();
+      const password = document.getElementById("login-password").value;
+
+      if (!email || !password) {
+        alert("Mail ve şifre gir.");
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        console.error(error);
+        alert("Giriş hatalı: " + error.message);
+        return;
+      }
+
+      enterApp(email);
+    }
+
+    async function logout() {
+      await supabase.auth.signOut();
+      currentUserMeta = null;
+      editingCell = null;
       document.getElementById("app-screen").classList.add("hidden");
       document.getElementById("login-screen").classList.remove("hidden");
     }
 
-    // --- APP INIT ---
-
-    function initApp() {
-      // örnek bir satır
-      rows = [
-        {
-          username: "user01",
-          email: "user01@example.com",
-          phone: "5300000000",
-          pin: "1234",
-          fullName: "Test Kullanıcı",
-          passwordNote: "Tamam",
-          outlookExtra: "",
-          defaultDepositOwner: "Ali",
-          defaultTurnoverOwner: "Ayşe",
-          monDepositDone: false,
-          monDepositBy: "",
-          monTurnoverDone: false,
-          monTurnoverBy: "",
-          monProfit: ""
-        }
-      ];
-      renderColumnToggles();
-      renderTable();
+    async function enterApp(email) {
+      currentUserMeta = resolveUserMeta(email);
+      document.getElementById("current-user").textContent = currentUserMeta
+        ? `${currentUserMeta.name} (${email})`
+        : `Giriş: ${email}`;
+      renderBoardNav();
+      document.getElementById("login-screen").classList.add("hidden");
+      document.getElementById("app-screen").classList.remove("hidden");
+      await initApp();
     }
 
-    // --- COLUMN TOGGLES ---
+    // ---- APP INIT ----
+    async function initApp() {
+      const { data, error } = await supabase
+        .from("task_rows")
+        .select("*")
+        .eq("board_id", currentBoard.id)
+        .order("full_name", { ascending: true });
 
+      if (error) {
+        console.error(error);
+        alert("Veriler yüklenirken hata: " + error.message);
+        return;
+      }
+
+      allRows = data || [];
+      rows = filterRowsForCurrentUser(allRows);
+      syncAvailableColumns(allRows);
+      renderColumnToggles();
+      renderTable();
+      refreshStats();
+    }
+
+    function renderBoardNav() {
+      const nav = document.getElementById("board-nav");
+      if (!nav) return;
+      nav.innerHTML = "";
+        boards.forEach(board => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.textContent = board.label;
+          btn.classList.toggle("active", board.id === currentBoard.id);
+          btn.onclick = () => switchBoard(board.id);
+          nav.appendChild(btn);
+        });
+
+        const addBtn = document.createElement("button");
+        addBtn.type = "button";
+        addBtn.classList.add("add-board-btn");
+        addBtn.textContent = "+ Yeni Tab";
+        addBtn.onclick = promptNewBoard;
+        nav.appendChild(addBtn);
+      }
+
+    async function switchBoard(boardId) {
+      if (currentBoard && currentBoard.id === boardId) return;
+      const target = boards.find(board => board.id === boardId);
+      if (!target) return;
+      currentBoard = target;
+      saveBoardPreference(boardId);
+      initializeWeekAndColumns();
+      visibleColumns = new Set();
+      initializeDefaultVisibility();
+      ensureAlwaysVisibleColumns();
+      editingCell = null;
+      renderBoardNav();
+      await initApp();
+    }
+
+    function getInitialBoard() {
+      try {
+        const savedId = localStorage.getItem(BOARD_STORAGE_KEY);
+        const found = boards.find(board => board.id === savedId);
+        if (found) return found;
+      } catch (error) {
+        console.warn("Board tercih okunamadı", error);
+      }
+      return boards[0];
+    }
+
+    function saveBoardPreference(boardId) {
+      try {
+        localStorage.setItem(BOARD_STORAGE_KEY, boardId);
+      } catch (error) {
+        console.warn("Board tercih kaydedilemedi", error);
+      }
+    }
+
+    function loadCustomBoards() {
+      try {
+        const raw = localStorage.getItem(CUSTOM_BOARDS_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed.filter(item => item?.id && item?.label);
+      } catch (error) {
+        console.warn("Custom board'lar yüklenemedi", error);
+      }
+      return [];
+    }
+
+    function saveCustomBoards() {
+      try {
+        localStorage.setItem(CUSTOM_BOARDS_KEY, JSON.stringify(customBoards));
+      } catch (error) {
+        console.warn("Custom board'lar kaydedilemedi", error);
+      }
+    }
+
+    function promptNewBoard() {
+      const name = prompt("Yeni tablo adı nedir?");
+      if (!name) return;
+      const trimmed = name.trim();
+      if (!trimmed) return;
+      let slug = slugifyBoardName(trimmed);
+      if (!slug) slug = `board-${Date.now()}`;
+      const baseSlug = slug;
+      let counter = 1;
+      while (boards.some(board => board.id === slug)) {
+        slug = `${baseSlug}-${counter++}`;
+      }
+
+      const newBoard = { id: slug, label: trimmed };
+      customBoards.push(newBoard);
+      saveCustomBoards();
+      boards = [...DEFAULT_BOARDS, ...customBoards];
+      switchBoard(slug);
+    }
+
+    function slugifyBoardName(value) {
+      return value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+    }
+
+    // ---- COLUMN TOGGLES ----
     function renderColumnToggles() {
       const wrap = document.getElementById("column-toggles");
       wrap.innerHTML = "";
-      columns.forEach(col => {
-        const id = "toggle-" + col.key;
+      groupDefinitions.forEach(group => {
+        const id = "toggle-" + group.key;
         const label = document.createElement("label");
         label.className = "flex gap-sm";
         label.style.fontSize = "0.78rem";
 
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
-        checkbox.checked = visibleColumns.has(col.key);
         checkbox.id = id;
-        checkbox.onchange = () => {
-          if (checkbox.checked) visibleColumns.add(col.key);
-          else visibleColumns.delete(col.key);
-          renderTable();
-        };
+        const availableKeys = group.columns.filter(key => availableColumnKeys.has(key));
+        const forcedKeys = availableKeys.filter(key => ALWAYS_VISIBLE_KEYS.has(key));
+        const togglableKeys = availableKeys.filter(key => !ALWAYS_VISIBLE_KEYS.has(key));
+        const visibleTogglable = togglableKeys.filter(key => visibleColumns.has(key));
+        const hasForcedOnly = togglableKeys.length === 0 && forcedKeys.length > 0;
+
+        if (hasForcedOnly) {
+          checkbox.checked = true;
+          checkbox.disabled = true;
+          checkbox.title = "Bu grup her zaman açık kalmalı";
+        } else {
+          checkbox.checked = togglableKeys.length > 0 && visibleTogglable.length === togglableKeys.length;
+          checkbox.indeterminate = visibleTogglable.length > 0 && visibleTogglable.length < togglableKeys.length;
+          checkbox.disabled = togglableKeys.length === 0;
+        }
+        checkbox.onchange = () => toggleGroup(group.key, checkbox.checked);
+        if (checkbox.disabled && !hasForcedOnly) {
+          checkbox.title = "Supabase'de bu grup için kolon bulunamadı";
+        }
 
         const span = document.createElement("span");
-        span.textContent = col.label;
+        span.textContent = group.label;
 
         label.appendChild(checkbox);
         label.appendChild(span);
@@ -365,8 +833,38 @@
       });
     }
 
-    // --- TABLE RENDER ---
+    function toggleGroup(groupKey, shouldShow) {
+      const group = groupDefinitions.find(g => g.key === groupKey);
+      if (!group) return;
+      const availableKeys = group.columns.filter(key => availableColumnKeys.has(key));
+      if (!availableKeys.length) return;
+      availableKeys.forEach(key => {
+        if (!shouldShow && ALWAYS_VISIBLE_KEYS.has(key)) return;
+        if (shouldShow) visibleColumns.add(key);
+        else visibleColumns.delete(key);
+      });
+      ensureAlwaysVisibleColumns();
+      renderColumnToggles();
+      renderTable();
+    }
 
+    function toggleColumnControls() {
+      columnControlsVisible = !columnControlsVisible;
+      updateColumnControlsVisibility();
+    }
+
+    function updateColumnControlsVisibility() {
+      const wrap = document.getElementById("column-controls");
+      const btn = document.getElementById("column-toggle-btn");
+      if (wrap) {
+        wrap.classList.toggle("hidden", !columnControlsVisible);
+      }
+      if (btn) {
+        btn.textContent = columnControlsVisible ? "Sütun Gruplarını Gizle" : "Sütun Gruplarını Göster";
+      }
+    }
+
+    // ---- TABLE RENDER ----
     function renderTable() {
       const table = document.getElementById("task-table");
       const thead = table.querySelector("thead");
@@ -374,8 +872,10 @@
       thead.innerHTML = "";
       tbody.innerHTML = "";
 
-      // Header
       const trHead = document.createElement("tr");
+      const actionTh = document.createElement("th");
+      actionTh.textContent = "İşlem";
+      trHead.appendChild(actionTh);
       columns.forEach(col => {
         if (!visibleColumns.has(col.key)) return;
         const th = document.createElement("th");
@@ -384,101 +884,735 @@
       });
       thead.appendChild(trHead);
 
-      // Body
-      rows.forEach((row, rowIndex) => {
+      rows.forEach(row => {
         const tr = document.createElement("tr");
+        if (rowOwnedTodayByCurrentUser(row)) tr.classList.add("owned-row");
+        else tr.classList.remove("owned-row");
+        tr.dataset.rowId = row.id || "temp";
+
+      const actionTd = document.createElement("td");
+      actionTd.className = "table-actions";
+      const rowEditable = canEditRow(row);
+      const editIcon = createIconButton("✎", !rowEditable, () => focusFirstEditableCell(row));
+      editIcon.title = rowEditable ? "Bu satırdaki alanları düzenle" : "Sadece sorumlu kişiler düzenleyebilir";
+      const deleteIcon = createIconButton("🗑", !rowEditable, () => confirmDeleteRow(row));
+      deleteIcon.title = rowEditable ? "Satırı sil" : "Sadece sorumlu kişiler silebilir";
+      actionTd.appendChild(editIcon);
+      actionTd.appendChild(deleteIcon);
+      tr.appendChild(actionTd);
+
         columns.forEach(col => {
           if (!visibleColumns.has(col.key)) return;
           const td = document.createElement("td");
-
-          if (col.type === "checkbox") {
-            td.className = "checkbox-cell";
-            const input = document.createElement("input");
-            input.type = "checkbox";
-            input.checked = !!row[col.key];
-            input.onchange = () => {
-              rows[rowIndex][col.key] = input.checked;
-            };
-            td.appendChild(input);
-          } else {
-            td.className = "input-cell";
-
-            // Mail için özel: input + copy butonu
-            if (col.key === "email") {
-              const wrap = document.createElement("div");
-              wrap.className = "copy-wrapper";
-
-              const input = document.createElement("input");
-              input.type = "text";
-              input.value = row[col.key] || "";
-              input.oninput = () => {
-                rows[rowIndex][col.key] = input.value;
-              };
-
-              const btn = document.createElement("button");
-              btn.type = "button";
-              btn.className = "btn-ghost";
-              btn.style.padding = "0.2rem 0.4rem";
-              btn.style.fontSize = "0.7rem";
-              btn.textContent = "Kopyala";
-              btn.onclick = () => copyToClipboard(input.value);
-
-              wrap.appendChild(input);
-              wrap.appendChild(btn);
-              td.appendChild(wrap);
-            } else {
-              const input = document.createElement("input");
-              input.type = col.type === "number" ? "number" : "text";
-              input.value = row[col.key] || "";
-              input.oninput = () => {
-                rows[rowIndex][col.key] = input.value;
-              };
-              td.appendChild(input);
-            }
-          }
-
+          td.dataset.columnKey = col.key;
+          const dayPrefix = dayConfigs.find(day => col.key.startsWith(`${day.prefix}_`));
+          if (dayPrefix) td.dataset.dayPrefix = dayPrefix.prefix;
+          const columnAvailable = availableColumnKeys.has(col.key);
+          renderInlineEditableCell(td, row, col, columnAvailable);
           tr.appendChild(td);
         });
+
+        updateDayStatusHighlight(row);
+
         tbody.appendChild(tr);
       });
     }
 
-    // --- ROW ACTIONS ---
+    // ---- ROW ACTIONS ----
+    function createEmptyRowPayload() {
+      const defaultOwner = currentUserMeta ? currentUserMeta.name : "";
+      const payload = {
+        username: "",
+        email: "",
+        phone: "",
+        pin: "",
+        full_name: "",
+        password_note: "",
+        outlook_extra: "",
+        default_deposit_owner: defaultOwner,
+        default_turnover_owner: defaultOwner
+      };
 
-    function addRow() {
-      const emptyRow = {};
-      columns.forEach(col => {
-        emptyRow[col.key] = col.type === "checkbox" ? false : "";
+      dayConfigs.forEach(day => {
+        payload[`${day.prefix}_deposit_done`] = false;
+        payload[`${day.prefix}_deposit_by`] = defaultOwner;
+        payload[`${day.prefix}_turnover_done`] = false;
+        payload[`${day.prefix}_turnover_by`] = defaultOwner;
+        payload[`${day.prefix}_profit`] = null;
       });
-      rows.push(emptyRow);
+
+      return payload;
+    }
+
+    async function addRow() {
+      const initial = createEmptyRowPayload();
+      initial.board_id = currentBoard.id;
+      const payload = filterPayloadToAvailableColumns(initial);
+
+      if (!Object.keys(payload).length) {
+        alert("Supabase şemasında kullanılabilir kolon bulunamadı. Lütfen DB kolonlarını güncelle.");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("task_rows")
+        .insert([payload])
+        .select()
+        .single();
+
+      if (error) {
+        console.error(error);
+        handleSchemaError(error.message);
+        alert("Satır eklenirken hata: " + error.message);
+        return;
+      }
+
+      prependTemporaryRow(data);
+    }
+
+    function prependTemporaryRow(newRow) {
+      if (!newRow) return;
+      allRows.unshift(newRow);
+      rows = filterRowsForCurrentUser(allRows);
+      renderTable();
+      refreshStats();
+    }
+
+    // ---- STATS ----
+    function refreshStats() {
+      const totalEl = document.getElementById("stat-total-rows");
+      if (!totalEl) return;
+
+      const stats = calculateStats();
+      totalEl.textContent = stats.totalRows;
+      document.getElementById("stat-today-deposit").textContent = stats.todayDepositDone;
+      document.getElementById("stat-today-turnover").textContent = stats.todayTurnoverDone;
+      document.getElementById("stat-week-profit").textContent = formatCurrency(stats.weekProfit);
+    }
+
+    function calculateStats() {
+      const todayPrefix = currentWeekMeta.todayIndex >= 0
+        ? dayConfigs[currentWeekMeta.todayIndex].prefix
+        : null;
+
+      const stats = {
+        totalRows: rows.length,
+        todayDepositDone: 0,
+        todayTurnoverDone: 0,
+        weekProfit: 0
+      };
+
+      rows.forEach(row => {
+        if (todayPrefix) {
+          if (row[`${todayPrefix}_deposit_done`]) stats.todayDepositDone += 1;
+          if (row[`${todayPrefix}_turnover_done`]) stats.todayTurnoverDone += 1;
+        }
+
+        dayConfigs.forEach(day => {
+          const rawValue = row[`${day.prefix}_profit`];
+          const numericValue = typeof rawValue === "number" ? rawValue : Number(rawValue);
+          if (!Number.isNaN(numericValue) && rawValue !== null && rawValue !== "") {
+            stats.weekProfit += numericValue;
+          }
+        });
+      });
+
+      return stats;
+    }
+
+    function formatCurrency(value) {
+      if (!value) return "₺0";
+      return new Intl.NumberFormat("tr-TR", {
+        style: "currency",
+        currency: "TRY",
+        maximumFractionDigits: 0
+      }).format(value);
+    }
+
+    function resolveUserMeta(email) {
+      const normalized = email.toLowerCase();
+      const match = TEAM_MEMBERS.find(member => member.email && member.email.toLowerCase() === normalized);
+      if (match) {
+        return {
+          email,
+          name: match.name,
+          role: match.role || "member",
+          canViewAll: (match.role || "member") === "admin"
+        };
+      }
+      alert("Bu mail TEAM_MEMBERS listesinde tanımlı değil. Lütfen index.html içinde TEAM_MEMBERS dizisini güncelle.");
+      return {
+        email,
+        name: email,
+        role: "admin",
+        canViewAll: true
+      };
+    }
+
+    function filterRowsForCurrentUser(data) {
+      if (!currentUserMeta) return data || [];
+      if (currentUserMeta.canViewAll) return data || [];
+      const name = currentUserMeta.name;
+      return (data || []).filter(row => isRowOwnedBy(row, name));
+    }
+
+    function canEditRow(row) {
+      if (!currentUserMeta) return false;
+      if (currentUserMeta.canViewAll) return true;
+      return isRowOwnedBy(row, currentUserMeta.name);
+    }
+
+    function isRowOwnedByCurrentUser(row) {
+      if (!currentUserMeta) return false;
+      return isRowOwnedBy(row, currentUserMeta.name);
+    }
+
+    function rowOwnedTodayByCurrentUser(row) {
+      if (!currentUserMeta) return false;
+      const prefix = getTodayPrefix();
+      if (!prefix) return false;
+      const depositOwner = row[`${prefix}_deposit_by`] || row.default_deposit_owner;
+      const turnoverOwner = row[`${prefix}_turnover_by`] || row.default_turnover_owner;
+      const target = normalizeName(currentUserMeta.name);
+      if (normalizeName(depositOwner) === target) return true;
+      if (normalizeName(turnoverOwner) === target) return true;
+      return false;
+    }
+
+    function canEditCell(row, col) {
+      if (!col || !col.key) return false;
+      if (!availableColumnKeys.has(col.key)) return false;
+      return canEditRow(row);
+    }
+
+    function isRowOwnedBy(row, memberName) {
+      if (!row || !memberName) return false;
+      const target = normalizeName(memberName);
+      if (normalizeName(row.default_deposit_owner) === target) return true;
+      if (normalizeName(row.default_turnover_owner) === target) return true;
+
+      return dayConfigs.some(day => {
+        const depositOwner = normalizeName(row[`${day.prefix}_deposit_by`]);
+        const turnoverOwner = normalizeName(row[`${day.prefix}_turnover_by`]);
+        return depositOwner === target || turnoverOwner === target;
+      });
+    }
+
+    function normalizeName(value) {
+      if (!value) return "";
+      return String(value).trim().toLowerCase();
+    }
+
+    function areValuesEqual(a, b) {
+      if (a === b) return true;
+      const normalize = val => (val === undefined || val === null || val === "" ? null : val);
+      return normalize(a) === normalize(b);
+    }
+
+    function syncAvailableColumns(data) {
+      let keys = new Set();
+      if (data && data.length) {
+        data.forEach(row => {
+          Object.keys(row || {}).forEach(key => keys.add(key));
+        });
+      } else {
+        keys = new Set(columns.map(col => col.key));
+      }
+      keys.add("board_id");
+      availableColumnKeys = keys;
+      missingColumnLabels = columns
+        .filter(col => !availableColumnKeys.has(col.key))
+        .map(col => col.label);
+      updateSchemaWarning();
+      ensureAlwaysVisibleColumns();
+    }
+
+    function updateSchemaWarning() {
+      const warningEl = document.getElementById("schema-warning");
+      if (!warningEl) return;
+      if (!missingColumnLabels.length) {
+        warningEl.classList.add("hidden");
+        return;
+      }
+
+      const preview = missingColumnLabels.slice(0, 6).join(", ");
+      const moreText = missingColumnLabels.length > 6 ? "…" : "";
+      warningEl.textContent = `Supabase task_rows tablosunda ${missingColumnLabels.length} eksik kolon var (ör: ${preview}${moreText}). Lütfen DB şemasını güncelle.`;
+      warningEl.classList.remove("hidden");
+    }
+
+    function filterPayloadToAvailableColumns(payload) {
+      if (!availableColumnKeys || !availableColumnKeys.size) return payload;
+      const filtered = {};
+      Object.keys(payload).forEach(key => {
+        if (availableColumnKeys.has(key)) {
+          filtered[key] = payload[key];
+        }
+      });
+      return filtered;
+    }
+
+    function getMissingColumnTooltip(label) {
+      return `Supabase'de '${label}' kolonu bulunamadı.`;
+    }
+
+    function handleSchemaError(message) {
+      const missingKey = extractColumnKeyFromError(message);
+      if (!missingKey) return;
+      markColumnMissing(missingKey);
+      renderColumnToggles();
       renderTable();
     }
 
-    // --- COPY TO CLIPBOARD ---
+    function extractColumnKeyFromError(message) {
+      if (!message) return null;
+      const match = message.match(/'([a-zA-Z0-9_]+)'/);
+      if (!match || !match[1]) return null;
+      const key = match[1];
+      const existsInConfig = columns.some(col => col.key === key);
+      return existsInConfig ? key : null;
+    }
 
-    function copyToClipboard(text) {
-      if (!text) return;
+    function markColumnMissing(columnKey) {
+      if (!columnKey) return;
+      availableColumnKeys.delete(columnKey);
+      missingColumnLabels = columns
+        .filter(col => !availableColumnKeys.has(col.key))
+        .map(col => col.label);
+      updateSchemaWarning();
+    }
+
+    // ---- COPY TO CLIPBOARD ----
+    function copyToClipboard(text, message) {
+      if (text === undefined || text === null) return;
+      const finalMessage = message || "Kopyalandı";
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(showCopyToast);
+        navigator.clipboard.writeText(text).then(() => showCopyToast(finalMessage));
       } else {
-        // fallback
         const tmp = document.createElement("textarea");
         tmp.value = text;
         document.body.appendChild(tmp);
         tmp.select();
         document.execCommand("copy");
         document.body.removeChild(tmp);
-        showCopyToast();
+        showCopyToast(finalMessage);
       }
     }
 
-    function showCopyToast() {
+    function showCopyToast(message = "Kopyalandı") {
       const toast = document.getElementById("copy-toast");
+      toast.textContent = message;
       toast.classList.add("show");
       setTimeout(() => {
         toast.classList.remove("show");
       }, 1200);
     }
+    function renderInlineEditableCell(td, row, col, columnAvailable) {
+      td.classList.add("input-cell");
+      const canEdit = columnAvailable && canEditCell(row, col);
+      const isSelectField = col.type === "checkbox" || shouldUseResponsibleSelect(col.key);
+      const currentValue = row[col.key];
+      const wrapper = document.createElement("div");
+      wrapper.className = "cell-wrapper";
+      td.appendChild(wrapper);
+
+      if (!columnAvailable) {
+        const info = document.createElement("span");
+        info.className = "cell-display";
+        info.textContent = "Kolon Supabase'de yok";
+        wrapper.appendChild(info);
+        const icon = createIconButton("✎", true);
+        icon.title = getMissingColumnTooltip(col.label);
+        wrapper.appendChild(icon);
+        td.classList.add("missing-column");
+        return;
+      }
+
+      if (isSelectField) {
+        if (canEdit) {
+      const select = renderSelectField(row, col, currentValue, td, row);
+          wrapper.appendChild(select);
+          const icon = createIconButton("✎", false, () => select.focus());
+          icon.title = "Seçimi değiştir";
+          wrapper.appendChild(icon);
+        } else {
+          const text = document.createElement("span");
+          text.className = "cell-display";
+          const displayValue = formatCellDisplayValue(col, currentValue) || "—";
+          text.textContent = displayValue;
+          if (displayValue && displayValue !== "—") {
+            attachCopyHandler(text, displayValue, col.label);
+          }
+          wrapper.appendChild(text);
+          const icon = createIconButton("✎", true);
+          icon.title = "Sadece sorumlu kişiler düzenleyebilir";
+          wrapper.appendChild(icon);
+        }
+        return;
+      }
+
+      const isEditing = editingCell && editingCell.rowId === row.id && editingCell.key === col.key;
+      if (isEditing && canEdit) {
+        const input = document.createElement("input");
+        input.type = col.type === "number" ? "number" : "text";
+        input.value = currentValue ?? "";
+        input.dataset.editing = `${row.id}-${col.key}`;
+        input.onkeydown = event => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            commitCellEdit(row, col, input.value);
+          } else if (event.key === "Escape") {
+            event.preventDefault();
+            cancelCellEditing();
+          }
+        };
+        setTimeout(() => input.focus(), 0);
+        wrapper.appendChild(input);
+
+        const saveIcon = document.createElement("button");
+        saveIcon.type = "button";
+        saveIcon.className = "edit-icon";
+        saveIcon.innerHTML = "✔";
+        saveIcon.onclick = () => commitCellEdit(row, col, input.value);
+        saveIcon.title = "Kaydet";
+
+        const cancelIcon = document.createElement("button");
+        cancelIcon.type = "button";
+        cancelIcon.className = "edit-icon";
+        cancelIcon.innerHTML = "✕";
+        cancelIcon.onclick = cancelCellEditing;
+        cancelIcon.title = "İptal";
+
+        wrapper.appendChild(saveIcon);
+        wrapper.appendChild(cancelIcon);
+        return;
+      }
+
+      const displaySpan = document.createElement("span");
+      displaySpan.className = "cell-display";
+      const displayText = formatCellDisplayValue(col, currentValue) || "—";
+      displaySpan.textContent = displayText;
+      if (displayText && displayText !== "—") {
+        attachCopyHandler(displaySpan, displayText, col.label);
+      }
+      wrapper.appendChild(displaySpan);
+
+      const icon = createIconButton("✎", !canEdit, () => startCellEditing(row, col));
+      icon.title = canEdit ? "Düzenle" : "Sadece sorumlu kişiler düzenleyebilir";
+      wrapper.appendChild(icon);
+    }
+
+    function renderSelectField(row, col, currentValue, cellElement, rowData) {
+      const select = document.createElement("select");
+      if (col.type === "checkbox") {
+        [
+          { value: "false", label: "Hayır" },
+          { value: "true", label: "Evet" }
+        ].forEach(optionData => {
+          const option = document.createElement("option");
+          option.value = optionData.value;
+          option.textContent = optionData.label;
+          select.appendChild(option);
+        });
+        select.value = currentValue ? "true" : "false";
+        const updateCheckboxStyle = value => {
+          if (!cellElement) return;
+          if (value) cellElement.classList.add("cell-checked");
+          else cellElement.classList.remove("cell-checked");
+        };
+        updateCheckboxStyle(!!currentValue);
+        select.onchange = async () => {
+          const newValue = select.value === "true";
+          updateCheckboxStyle(newValue);
+          row[col.key] = newValue;
+          await saveSingleCell(row.id, col.key, newValue);
+          updateDayStatusHighlight(rowData || row);
+        };
+        return select;
+      }
+
+      const placeholderOption = document.createElement("option");
+      placeholderOption.value = "";
+      placeholderOption.textContent = "Seçiniz";
+      select.appendChild(placeholderOption);
+
+      RESPONSIBLE_OPTIONS.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        select.appendChild(option);
+      });
+
+      if (currentValue && !RESPONSIBLE_OPTIONS.includes(currentValue)) {
+        const customOption = document.createElement("option");
+        customOption.value = currentValue;
+        customOption.textContent = currentValue;
+        select.appendChild(customOption);
+      }
+
+      select.value = currentValue || "";
+      select.onchange = async () => {
+        const newValue = select.value || null;
+        row[col.key] = newValue;
+        const cascadePayload =
+          col.key === "default_deposit_owner" || col.key === "default_turnover_owner"
+            ? buildCascadePayload(col.key, newValue)
+            : null;
+        await saveSingleCell(row.id, col.key, newValue, cascadePayload);
+        updateDayStatusHighlight(rowData || row);
+      };
+
+      return select;
+    }
+
+    function createIconButton(symbol, disabled, onClick) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "edit-icon";
+      btn.innerHTML = symbol;
+      btn.disabled = !!disabled;
+      if (!btn.disabled && typeof onClick === "function") {
+        btn.onclick = event => {
+          event.stopPropagation();
+          onClick(event);
+        };
+      }
+      return btn;
+    }
+
+    function focusFirstEditableCell(row) {
+      if (!row || !row.id) return;
+      const targetColumn = columns.find(col =>
+        visibleColumns.has(col.key) &&
+        isInlineInputColumn(col) &&
+        canEditCell(row, col)
+      );
+      if (targetColumn) {
+        startCellEditing(row, targetColumn);
+        return;
+      }
+
+      const fallbackColumn = columns.find(col =>
+        visibleColumns.has(col.key) &&
+        canEditCell(row, col)
+      );
+      if (fallbackColumn) {
+        focusSelectCell(row.id, fallbackColumn.key);
+      }
+    }
+
+    function focusSelectCell(rowId, columnKey) {
+      if (!rowId || !columnKey) return;
+      const selector = `[data-row-id="${rowId}"] [data-column-key="${columnKey}"] select`;
+      const select = document.querySelector(selector);
+      if (select) select.focus();
+    }
+
+    function isInlineInputColumn(col) {
+      if (!col) return false;
+      return col.type !== "checkbox" && !shouldUseResponsibleSelect(col.key);
+    }
+
+    function startCellEditing(row, col) {
+      if (!row || !row.id || !col) return;
+      if (!canEditCell(row, col)) return;
+      editingCell = { rowId: row.id, key: col.key };
+      renderTable();
+    }
+
+    function cancelCellEditing() {
+      editingCell = null;
+      renderTable();
+    }
+
+    async function commitCellEdit(row, col, rawValue) {
+      if (!row || !row.id || !col) {
+        cancelCellEditing();
+        return;
+      }
+      const parsedValue = parseValueForColumn(col, rawValue);
+      const existingRow = getRowById(row.id) || row;
+      const previousValue = existingRow ? existingRow[col.key] : null;
+      if (areValuesEqual(parsedValue, previousValue)) {
+        cancelCellEditing();
+        return;
+      }
+      editingCell = null;
+      row[col.key] = parsedValue;
+      await saveSingleCell(row.id, col.key, parsedValue);
+      updateDayStatusHighlight(row);
+    }
+
+    async function confirmDeleteRow(row) {
+      if (!row || !row.id) return;
+      if (!canEditRow(row)) {
+        alert("Bu satırı silme yetkin yok.");
+        return;
+      }
+      const label = row.full_name || row.username || row.email || "bu satır";
+      const message = `"${label}" satırını silmek istediğine emin misin? Bu işlem geri alınamaz.`;
+      if (!window.confirm(message)) return;
+
+      const { error } = await supabase
+        .from("task_rows")
+        .delete()
+        .eq("id", row.id)
+        .eq("board_id", currentBoard.id);
+
+      if (error) {
+        console.error(error);
+        alert("Satır silinirken hata: " + error.message);
+        return;
+      }
+
+      allRows = allRows.filter(r => r.id !== row.id);
+      rows = filterRowsForCurrentUser(allRows);
+      refreshStats();
+      renderTable();
+    }
+
+    function parseValueForColumn(col, rawValue) {
+      if (!col) return rawValue;
+      if (col.type === "number") {
+        if (rawValue === "" || rawValue === null || rawValue === undefined) return null;
+        const num = Number(rawValue);
+        return Number.isNaN(num) ? null : num;
+      }
+      if (rawValue === undefined || rawValue === null) return null;
+      const trimmed = String(rawValue).trim();
+      return trimmed === "" ? null : trimmed;
+    }
+
+    function buildCascadePayload(defaultKey, value) {
+      const type = defaultKey === "default_deposit_owner" ? "deposit" : "turnover";
+      const changes = {};
+      dayConfigs.forEach(day => {
+        changes[`${day.prefix}_${type}_by`] = value;
+      });
+      return changes;
+    }
+
+    function getRowById(rowId) {
+      return allRows.find(row => row.id === rowId);
+    }
+
+    function updateDayStatusHighlight(row) {
+      if (!row || !row.id) return;
+      const tr = document.querySelector(`tr[data-row-id="${row.id}"]`);
+      if (!tr) return;
+
+      dayConfigs.forEach(day => {
+        const depositKey = `${day.prefix}_deposit_done`;
+        const turnoverKey = `${day.prefix}_turnover_done`;
+        const depositDone = !!row[depositKey];
+        const turnoverDone = !!row[turnoverKey];
+
+        const depositCell = tr.querySelector(`[data-column-key="${depositKey}"]`);
+        const turnoverCell = tr.querySelector(`[data-column-key="${turnoverKey}"]`);
+        toggleCellChecked(depositCell, depositDone);
+        toggleCellChecked(turnoverCell, turnoverDone);
+
+        const dayCells = tr.querySelectorAll(`[data-day-prefix="${day.prefix}"]`);
+        const complete = depositDone && turnoverDone;
+        dayCells.forEach(cell => {
+          if (complete) cell.classList.add("day-complete");
+          else cell.classList.remove("day-complete");
+        });
+      });
+    }
+
+    function toggleCellChecked(cell, isChecked) {
+      if (!cell) return;
+      if (isChecked) cell.classList.add("cell-checked");
+      else cell.classList.remove("cell-checked");
+    }
+
+    function attachCopyHandler(target, value, label) {
+      if (!target) return;
+      target.classList.add("copyable");
+      target.onclick = event => {
+        event.stopPropagation();
+        if (!value) return;
+        copyToClipboard(value, `${label} kopyalandı`);
+      };
+    }
+
+    function formatCellDisplayValue(col, rawValue) {
+      if (col.type === "checkbox") {
+        return rawValue ? "Evet" : "Hayır";
+      }
+      if (col.type === "number") {
+        if (rawValue === null || rawValue === undefined || rawValue === "") return "";
+        return Number(rawValue).toString();
+      }
+      return rawValue ? String(rawValue) : "";
+    }
+
+    function shouldUseResponsibleSelect(key) {
+      return (
+        key === "default_deposit_owner" ||
+        key === "default_turnover_owner" ||
+        key.endsWith("_deposit_by") ||
+        key.endsWith("_turnover_by")
+      );
+    }
+
+    async function saveSingleCell(rowId, key, value, extraPayload = null) {
+      if (!rowId) {
+        alert("Satır ID bulunamadı. Lütfen sayfayı yenile.");
+        return;
+      }
+      const payload = extraPayload ? { ...extraPayload } : {};
+      if (key) payload[key] = value;
+      const filtered = filterPayloadToAvailableColumns(payload);
+      if (!Object.keys(filtered).length) {
+        alert("Bu alan Supabase şemasında bulunmuyor.");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("task_rows")
+        .update(filtered)
+        .eq("id", rowId)
+        .eq("board_id", currentBoard.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error(error);
+        handleSchemaError(error.message);
+        alert("Kaydedilirken hata: " + error.message);
+        return;
+      }
+
+      replaceRowCollections(data);
+      refreshStats();
+      renderTable();
+    }
+
+    function replaceRowCollections(updatedRow) {
+      if (!updatedRow || !updatedRow.id) return;
+      const idxAll = allRows.findIndex(r => r.id === updatedRow.id);
+      if (idxAll >= 0) allRows[idxAll] = updatedRow;
+      else allRows.push(updatedRow);
+      rows = filterRowsForCurrentUser(allRows);
+      syncAvailableColumns(allRows);
+    }
+
+    async function checkExistingSession() {
+      try {
+        const { data } = await supabase.auth.getSession();
+        const email = data?.session?.user?.email;
+        if (email) {
+          enterApp(email);
+        }
+      } catch (error) {
+        console.error("Session kontrolü başarısız", error);
+      }
+    }
+
+    checkExistingSession();
+    updateColumnControlsVisibility();
   </script>
 </body>
 </html>
