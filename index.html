@@ -441,12 +441,12 @@
 
     // ---- TEAM CONFIG ----
     const TEAM_MEMBERS = [
-      { name: "Berk", email: "", role: "member" },
+      { name: "Berk", email: "", role: "admin" },
       { name: "Volkan", email: "volkanerenee@gmail.com", role: "admin" },
-      { name: "Uğurcan", email: "ugurcan.kurtulus@outlook.com", role: "member" },
-      { name: "Bera", email: "", role: "member" },
-      { name: "Bora", email: "ali.bora2002@hotmail.com", role: "member" },
-      { name: "Rahmet", email: "emmamackey10380@gmail.com", role: "member" }
+      { name: "Uğurcan", email: "ugurcan.kurtulus@outlook.com", role: "admin" },
+      { name: "Bera", email: "", role: "admin" },
+      { name: "Bora", email: "ali.bora2002@hotmail.com", role: "admin" },
+      { name: "Rahmet", email: "emmamackey10380@gmail.com", role: "admin" }
     ];
     const RESPONSIBLE_OPTIONS = TEAM_MEMBERS.map(member => member.name);
 
@@ -1050,10 +1050,7 @@
     }
 
     function filterRowsForCurrentUser(data) {
-      if (!currentUserMeta) return data || [];
-      if (currentUserMeta.canViewAll) return data || [];
-      const name = currentUserMeta.name;
-      return (data || []).filter(row => isRowOwnedBy(row, name));
+      return data || [];
     }
 
     function canEditRow(row) {
