@@ -359,10 +359,12 @@
 
     <div class="container">
       <div class="subnav" id="board-nav"></div>
+      <div class="subnav" id="extras-nav"></div>
 
       <!-- Stats -->
-      <div class="card" id="stats-card">
-        <div class="flex-between">
+      <section id="board-section">
+        <div class="card" id="stats-card">
+          <div class="flex-between">
           <div>
             <div style="font-size:0.9rem;font-weight:600;">Haftalık İstatistikler</div>
             <div style="font-size:0.78rem;color:#6b7280;">Tüm değerler Supabase verilerinden hesaplanır</div>
@@ -390,7 +392,7 @@
       </div>
 
       <!-- Controls -->
-      <div class="card">
+        <div class="card">
         <div class="flex-between">
           <div>
             <div style="font-size:0.9rem;font-weight:600;">Tablo Kontrolleri</div>
@@ -417,12 +419,39 @@
       </div>
 
       <!-- Table -->
-      <div class="card" style="overflow:auto;max-height:70vh;">
-        <table id="task-table">
-          <thead></thead>
-          <tbody></tbody>
-        </table>
-      </div>
+        <div class="card" style="overflow:auto;max-height:70vh;">
+          <table id="task-table">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="extras-section" class="hidden">
+        <div class="card">
+          <div class="flex-between">
+            <div>
+              <div style="font-size:0.9rem;font-weight:600;">Ekstra Ödemeler</div>
+              <div style="font-size:0.8rem;color:#6b7280;">Kimin ödediği, miktarı ve açıklaması takip edilir.</div>
+            </div>
+            <button class="btn-primary" type="button" onclick="addExtraPayment();">+ Yeni Ödeme</button>
+          </div>
+        </div>
+
+        <div class="card" style="overflow:auto;max-height:60vh;">
+          <table id="extras-table">
+            <thead>
+              <tr>
+                <th>Ödeyen</th>
+                <th>Tutar (₺)</th>
+                <th>Açıklama</th>
+                <th>İşlem</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
     </div>
   </div>
 
@@ -483,6 +512,7 @@
     let customBoards = loadCustomBoards();
     let boards = [...DEFAULT_BOARDS, ...customBoards];
     let currentBoard = getInitialBoard();
+    let activeSection = "boards";
 
     let currentWeekMeta = null;
     let columns = [];
@@ -500,6 +530,7 @@
     let currentUserMeta = null;
     let editingCell = null;
     let columnControlsVisible = false;
+    let extraPayments = [];
 
     function initializeWeekAndColumns() {
       currentWeekMeta = getCurrentWeekMeta();
@@ -664,7 +695,7 @@
       renderBoardNav();
       document.getElementById("login-screen").classList.add("hidden");
       document.getElementById("app-screen").classList.remove("hidden");
-      await initApp();
+      await Promise.all([initApp(), loadExtraPayments()]);
     }
 
     // ---- APP INIT ----
@@ -689,6 +720,22 @@
       refreshStats();
     }
 
+    async function loadExtraPayments() {
+      const { data, error } = await supabase
+        .from("extra_payments")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error(error);
+        alert("Ekstra ödemeler yüklenirken hata: " + error.message);
+        return;
+      }
+
+      extraPayments = data || [];
+      renderExtrasTable();
+    }
+
     function renderBoardNav() {
       const nav = document.getElementById("board-nav");
       if (!nav) return;
@@ -702,13 +749,15 @@
           nav.appendChild(btn);
         });
 
-        const addBtn = document.createElement("button");
-        addBtn.type = "button";
-        addBtn.classList.add("add-board-btn");
-        addBtn.textContent = "+ Yeni Tab";
-        addBtn.onclick = promptNewBoard;
-        nav.appendChild(addBtn);
-      }
+      const addBtn = document.createElement("button");
+      addBtn.type = "button";
+      addBtn.classList.add("add-board-btn");
+      addBtn.textContent = "+ Yeni Tab";
+      addBtn.onclick = promptNewBoard;
+      nav.appendChild(addBtn);
+
+      renderExtrasNav();
+    }
 
     async function switchBoard(boardId) {
       if (currentBoard && currentBoard.id === boardId) return;
@@ -723,6 +772,36 @@
       editingCell = null;
       renderBoardNav();
       await initApp();
+    }
+
+    function renderExtrasNav() {
+      const nav = document.getElementById("extras-nav");
+      if (!nav) return;
+      nav.innerHTML = "";
+
+      const btnBoards = document.createElement("button");
+      btnBoards.type = "button";
+      btnBoards.textContent = "Görev Tablosu";
+      btnBoards.classList.toggle("active", activeSection === "boards");
+      btnBoards.onclick = () => switchSection("boards");
+
+      const btnExtras = document.createElement("button");
+      btnExtras.type = "button";
+      btnExtras.textContent = "Ekstra Ödemeler";
+      btnExtras.classList.toggle("active", activeSection === "extras");
+      btnExtras.onclick = () => switchSection("extras");
+
+      nav.appendChild(btnBoards);
+      nav.appendChild(btnExtras);
+    }
+
+    async function switchSection(section) {
+      if (activeSection === section) return;
+      activeSection = section;
+      document.getElementById("board-section").classList.toggle("hidden", section !== "boards");
+      document.getElementById("extras-section").classList.toggle("hidden", section !== "extras");
+      renderExtrasNav();
+      if (section === "extras") await loadExtraPayments();
     }
 
     function getInitialBoard() {
@@ -1055,7 +1134,7 @@
 
     function canEditRow(row) {
       if (!currentUserMeta) return false;
-      if (currentUserMeta.canViewAll) return true;
+      if (currentUserMeta.canViewAll) return true;  
       return isRowOwnedBy(row, currentUserMeta.name);
     }
 
@@ -1516,6 +1595,8 @@
           else cell.classList.remove("day-complete");
         });
       });
+
+      tr.classList.toggle("owned-row", rowOwnedTodayByCurrentUser(row));
     }
 
     function toggleCellChecked(cell, isChecked) {
@@ -1601,7 +1682,7 @@
         const { data } = await supabase.auth.getSession();
         const email = data?.session?.user?.email;
         if (email) {
-          enterApp(email);
+          await enterApp(email);
         }
       } catch (error) {
         console.error("Session kontrolü başarısız", error);
@@ -1610,6 +1691,128 @@
 
     checkExistingSession();
     updateColumnControlsVisibility();
+
+    function renderExtrasTable() {
+      const tbody = document.querySelector("#extras-table tbody");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+      extraPayments.forEach(payment => {
+        const tr = document.createElement("tr");
+        tr.dataset.extraId = payment.id || "temp";
+
+        const ownerTd = document.createElement("td");
+        const ownerSelect = document.createElement("select");
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "Seçiniz";
+        ownerSelect.appendChild(placeholder);
+        RESPONSIBLE_OPTIONS.forEach(name => {
+          const option = document.createElement("option");
+          option.value = name;
+          option.textContent = name;
+          ownerSelect.appendChild(option);
+        });
+        ownerSelect.value = payment.paid_by || "";
+        ownerSelect.onchange = () => updateExtraPayment(payment.id, { paid_by: ownerSelect.value || null });
+        ownerTd.appendChild(ownerSelect);
+
+        const amountTd = document.createElement("td");
+        const amountInput = document.createElement("input");
+        amountInput.type = "number";
+        amountInput.step = "0.01";
+        amountInput.value = payment.amount ?? "";
+        amountInput.onchange = () => {
+          const val = amountInput.value;
+          const parsed = val === "" ? null : Number(val);
+          updateExtraPayment(payment.id, { amount: Number.isNaN(parsed) ? null : parsed });
+        };
+        amountTd.appendChild(amountInput);
+
+        const noteTd = document.createElement("td");
+        const noteInput = document.createElement("input");
+        noteInput.type = "text";
+        noteInput.value = payment.note || "";
+        noteInput.onchange = () => updateExtraPayment(payment.id, { note: noteInput.value || null });
+        noteTd.appendChild(noteInput);
+
+        const actionTd = document.createElement("td");
+        const deleteBtn = document.createElement("button");
+        deleteBtn.type = "button";
+        deleteBtn.className = "edit-icon";
+        deleteBtn.textContent = "🗑";
+        deleteBtn.onclick = () => deleteExtraPayment(payment.id);
+        actionTd.appendChild(deleteBtn);
+
+        tr.appendChild(ownerTd);
+        tr.appendChild(amountTd);
+        tr.appendChild(noteTd);
+        tr.appendChild(actionTd);
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function addExtraPayment() {
+      const defaultPayer = currentUserMeta ? currentUserMeta.name : "";
+      const payload = {
+        paid_by: defaultPayer || null,
+        amount: null,
+        note: ""
+      };
+
+      const { data, error } = await supabase
+        .from("extra_payments")
+        .insert([payload])
+        .select()
+        .single();
+
+      if (error) {
+        console.error(error);
+        alert("Ödeme eklenirken hata: " + error.message);
+        return;
+      }
+
+      extraPayments.unshift(data);
+      renderExtrasTable();
+    }
+
+    async function deleteExtraPayment(id) {
+      if (!id) return;
+      if (!confirm("Bu ödemeyi silmek istediğine emin misin?")) return;
+      const { error } = await supabase
+        .from("extra_payments")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        console.error(error);
+        alert("Ödeme silinirken hata: " + error.message);
+        return;
+      }
+
+      extraPayments = extraPayments.filter(item => item.id !== id);
+      renderExtrasTable();
+    }
+
+    async function updateExtraPayment(id, changes) {
+      if (!id || !changes || !Object.keys(changes).length) return;
+      const { data, error } = await supabase
+        .from("extra_payments")
+        .update(changes)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error(error);
+        alert("Ödeme güncellenirken hata: " + error.message);
+        return;
+      }
+
+      const idx = extraPayments.findIndex(p => p.id === id);
+      if (idx >= 0) extraPayments[idx] = data;
+      else extraPayments.unshift(data);
+      renderExtrasTable();
+    }
   </script>
 </body>
 </html>
