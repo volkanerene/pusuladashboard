@@ -484,6 +484,7 @@
     // Key'ler Supabase tablosundaki kolon isimleriyle birebir uyumlu:
     const baseColumns = [
       { key: "row_order",             label: "Sıra",                           type: "number" },
+      { key: "owner",                 label: "Sahibi",                         type: "text" },
       { key: "username",               label: "Kullanıcı Adı",                  type: "text" },
       { key: "email",                  label: "Mail",                           type: "text" },
       { key: "phone",                  label: "Numara",                         type: "text" },
@@ -521,7 +522,7 @@
     let currentWeekMeta = null;
     let columns = [];
     let groupDefinitions = [];
-    const ALWAYS_VISIBLE_KEYS = new Set(["row_order", "email", "username"]);
+    const ALWAYS_VISIBLE_KEYS = new Set(["row_order", "owner", "email", "username"]);
     initializeWeekAndColumns();
 
     let visibleColumns = new Set();
@@ -855,7 +856,7 @@
             id,
             label: name,
             dataBoardId: baseBoardId,
-            filterType: "todayDeposit",
+            filterField: "owner",
             filterValue: name,
             derivedFrom: baseBoardId
           };
@@ -1046,6 +1047,7 @@
     function createEmptyRowPayload() {
       const defaultOwner = currentUserMeta ? currentUserMeta.name : "";
       const payload = {
+        owner: defaultOwner,
         row_order: getNextRowOrder(),
         username: "",
         email: "",
@@ -1201,23 +1203,12 @@
       const target = normalizeName(currentBoard.filterValue);
       if (!target) return collection;
 
-      if (currentBoard.filterType === "todayDeposit") {
-        return filterByTodayDeposit(collection, target);
-      }
-
       if (currentBoard.filterField) {
         const field = currentBoard.filterField;
         return collection.filter(row => normalizeName(row?.[field]) === target);
       }
 
       return collection;
-    }
-
-    function filterByTodayDeposit(collection, targetName) {
-      const prefix = getTodayPrefix();
-      if (!prefix) return [];
-      const key = `${prefix}_deposit_by`;
-      return collection.filter(row => normalizeName(row?.[key]) === targetName);
     }
 
     function canEditRow(row) {
@@ -1716,6 +1707,7 @@
 
     function shouldUseResponsibleSelect(key) {
       return (
+        key === "owner" ||
         key === "default_deposit_owner" ||
         key === "default_turnover_owner" ||
         key.endsWith("_deposit_by") ||
