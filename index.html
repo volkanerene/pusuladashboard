@@ -505,9 +505,11 @@
       { prefix: "mon", shortLabel: "Pzt" }
     ];
 
+    const PUSULA_MEMBER_BOARDS = createMemberBoards("pusula");
     const DEFAULT_BOARDS = [
-      { id: "pusula", label: "Pusula" },
-      { id: "hesaplar", label: "Hesaplar" }
+      { id: "pusula", label: "Pusula", dataBoardId: "pusula" },
+      ...PUSULA_MEMBER_BOARDS,
+      { id: "hesaplar", label: "Hesaplar", dataBoardId: "hesaplar" }
     ];
     const BOARD_STORAGE_KEY = "pusula-active-board";
     const CUSTOM_BOARDS_KEY = "pusula-custom-boards";
@@ -702,10 +704,15 @@
 
     // ---- APP INIT ----
     async function initApp() {
+      const dataBoardId = getBoardDataId(currentBoard);
+      if (!dataBoardId) {
+        alert("Aktif board ID bulunamadı.");
+        return;
+      }
       const { data, error } = await supabase
         .from("task_rows")
         .select("*")
-        .eq("board_id", currentBoard.id)
+        .eq("board_id", dataBoardId)
         .order("row_order", { ascending: true, nullsFirst: false })
         .order("full_name", { ascending: true });
 
@@ -824,6 +831,41 @@
       } catch (error) {
         console.warn("Board tercih kaydedilemedi", error);
       }
+    }
+
+    function getBoardDataId(board) {
+      if (!board) return null;
+      return board.dataBoardId || board.sourceBoardId || board.id;
+    }
+
+    function createMemberBoards(baseBoardId) {
+      const uniqueKeys = new Set();
+      return TEAM_MEMBERS
+        .map(member => (member?.name || "").trim())
+        .filter(name => !!name)
+        .filter(name => {
+          const key = buildMemberBoardId(baseBoardId, name);
+          if (uniqueKeys.has(key)) return false;
+          uniqueKeys.add(key);
+          return true;
+        })
+        .map(name => {
+          const id = buildMemberBoardId(baseBoardId, name);
+          return {
+            id,
+            label: name,
+            dataBoardId: baseBoardId,
+            filterType: "todayDeposit",
+            filterValue: name,
+            derivedFrom: baseBoardId
+          };
+        });
+    }
+
+    function buildMemberBoardId(baseBoardId, name) {
+      const slug = slugifyBoardName(name) || normalizeName(name).replace(/\s+/g, "-");
+      const safeSlug = slug && slug !== "-" ? slug : "member";
+      return `${baseBoardId}-${safeSlug}`;
     }
 
     function loadCustomBoards() {
@@ -1038,7 +1080,12 @@
 
     async function addRow() {
       const initial = createEmptyRowPayload();
-      initial.board_id = currentBoard.id;
+      const dataBoardId = getBoardDataId(currentBoard);
+      if (!dataBoardId) {
+        alert("Yeni satır eklemek için geçerli bir board seç.");
+        return;
+      }
+      initial.board_id = dataBoardId;
       const payload = filterPayloadToAvailableColumns(initial);
 
       if (!Object.keys(payload).length) {
@@ -1142,7 +1189,35 @@
     }
 
     function filterRowsForCurrentUser(data) {
-      return data || [];
+      const list = data || [];
+      return applyBoardFilter(list);
+    }
+
+    function applyBoardFilter(collection) {
+      if (!Array.isArray(collection)) return [];
+      if (!currentBoard || !currentBoard.filterValue) {
+        return collection;
+      }
+      const target = normalizeName(currentBoard.filterValue);
+      if (!target) return collection;
+
+      if (currentBoard.filterType === "todayDeposit") {
+        return filterByTodayDeposit(collection, target);
+      }
+
+      if (currentBoard.filterField) {
+        const field = currentBoard.filterField;
+        return collection.filter(row => normalizeName(row?.[field]) === target);
+      }
+
+      return collection;
+    }
+
+    function filterByTodayDeposit(collection, targetName) {
+      const prefix = getTodayPrefix();
+      if (!prefix) return [];
+      const key = `${prefix}_deposit_by`;
+      return collection.filter(row => normalizeName(row?.[key]) === targetName);
     }
 
     function canEditRow(row) {
@@ -1546,7 +1621,7 @@
         .from("task_rows")
         .delete()
         .eq("id", row.id)
-        .eq("board_id", currentBoard.id);
+        .eq("board_id", getBoardDataId(currentBoard));
 
       if (error) {
         console.error(error);
@@ -1665,7 +1740,7 @@
         .from("task_rows")
         .update(filtered)
         .eq("id", rowId)
-        .eq("board_id", currentBoard.id)
+        .eq("board_id", getBoardDataId(currentBoard))
         .select()
         .single();
 
