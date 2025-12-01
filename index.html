@@ -483,6 +483,7 @@
     // ---- DATA MODEL ----
     // Key'ler Supabase tablosundaki kolon isimleriyle birebir uyumlu:
     const baseColumns = [
+      { key: "row_order",             label: "Sıra",                           type: "number" },
       { key: "username",               label: "Kullanıcı Adı",                  type: "text" },
       { key: "email",                  label: "Mail",                           type: "text" },
       { key: "phone",                  label: "Numara",                         type: "text" },
@@ -518,7 +519,7 @@
     let currentWeekMeta = null;
     let columns = [];
     let groupDefinitions = [];
-    const ALWAYS_VISIBLE_KEYS = new Set(["email", "username"]);
+    const ALWAYS_VISIBLE_KEYS = new Set(["row_order", "email", "username"]);
     initializeWeekAndColumns();
 
     let visibleColumns = new Set();
@@ -705,6 +706,7 @@
         .from("task_rows")
         .select("*")
         .eq("board_id", currentBoard.id)
+        .order("row_order", { ascending: true, nullsFirst: false })
         .order("full_name", { ascending: true });
 
       if (error) {
@@ -1002,6 +1004,7 @@
     function createEmptyRowPayload() {
       const defaultOwner = currentUserMeta ? currentUserMeta.name : "";
       const payload = {
+        row_order: getNextRowOrder(),
         username: "",
         email: "",
         phone: "",
@@ -1022,6 +1025,15 @@
       });
 
       return payload;
+    }
+
+    function getNextRowOrder() {
+      if (!allRows || !allRows.length) return 1;
+      const numericOrders = allRows
+        .map(row => Number(row.row_order))
+        .filter(value => !Number.isNaN(value));
+      if (!numericOrders.length) return 1;
+      return Math.max(...numericOrders) + 1;
     }
 
     async function addRow() {
