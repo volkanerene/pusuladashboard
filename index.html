@@ -482,6 +482,7 @@
 
     // ---- DATA MODEL ----
     // Key'ler Supabase tablosundaki kolon isimleriyle birebir uyumlu:
+    const OPTIONAL_GENERAL_COLUMNS = new Set(["full_name", "password_note", "outlook_extra"]);
     const baseColumns = [
       { key: "row_order",             label: "Sıra",                           type: "number" },
       { key: "owner",                 label: "Sahibi",                         type: "text" },
@@ -491,9 +492,7 @@
       { key: "pin",                    label: "4 Haneli PIN",                   type: "text" },
       { key: "full_name",              label: "Ad Soyad",                       type: "text" },
       { key: "password_note",          label: "Şifre Notu / Onay",              type: "text" },
-      { key: "outlook_extra",          label: "Outlook Ekstra Numara",          type: "text" },
-      { key: "default_deposit_owner",  label: "Para Atan", type: "text" },
-      { key: "default_turnover_owner", label: "Çevrimci",    type: "text" }
+      { key: "outlook_extra",          label: "Outlook Ekstra Numara",          type: "text" }
     ];
 
     const dayConfigs = [
@@ -522,7 +521,7 @@
     let currentWeekMeta = null;
     let columns = [];
     let groupDefinitions = [];
-    const ALWAYS_VISIBLE_KEYS = new Set(["row_order", "owner", "email", "username"]);
+    const ALWAYS_VISIBLE_KEYS = new Set(["row_order", "owner", "email", "username", "phone", "pin"]);
     initializeWeekAndColumns();
 
     let visibleColumns = new Set();
@@ -601,9 +600,7 @@
         const baseLabel = `${day.shortLabel} (${dateLabel})`;
         return [
           { key: `${day.prefix}_deposit_done`,  label: `Para Atıldı mı?`,     type: "checkbox" },
-          { key: `${day.prefix}_deposit_by`,    label: `Para Atan Kişi`,      type: "text"     },
           { key: `${day.prefix}_turnover_done`, label: `Çevrim Yapıldı mı?`, type: "checkbox" },
-          { key: `${day.prefix}_turnover_by`,   label: `Çevrim Yapan Kişi`,   type: "text"     },
           { key: `${day.prefix}_profit`,        label: `Kâr`,                 type: "number"   }
         ];
       });
@@ -612,12 +609,31 @@
     }
 
     function createGroupDefinitions() {
+      const optionalGeneralColumns = baseColumns
+        .filter(col => OPTIONAL_GENERAL_COLUMNS.has(col.key))
+        .map(col => col.key);
+      const generalColumns = baseColumns
+        .filter(col => !OPTIONAL_GENERAL_COLUMNS.has(col.key))
+        .map(col => col.key);
+
       const generalGroup = {
         key: "general",
         label: "Genel Bilgiler",
-        columns: baseColumns.map(col => col.key),
+        columns: generalColumns,
         isDayGroup: false
       };
+
+      const result = [generalGroup];
+
+      if (optionalGeneralColumns.length) {
+        result.push({
+          key: "general-extra",
+          label: "Ek Genel Bilgiler",
+          columns: optionalGeneralColumns,
+          isDayGroup: false,
+          optional: true
+        });
+      }
 
       const dayGroups = dayConfigs.map((day, index) => {
         const dateLabel = formatDateLabel(currentWeekMeta.weekDates[index]);
@@ -626,9 +642,7 @@
           label: `${day.shortLabel} (${dateLabel})`,
           columns: [
             `${day.prefix}_deposit_done`,
-            `${day.prefix}_deposit_by`,
             `${day.prefix}_turnover_done`,
-            `${day.prefix}_turnover_by`,
             `${day.prefix}_profit`
           ],
           isDayGroup: true,
@@ -636,7 +650,7 @@
         };
       });
 
-      return [generalGroup, ...dayGroups];
+      return [...result, ...dayGroups];
     }
 
     function initializeDefaultVisibility() {
@@ -648,7 +662,8 @@
     }
 
     function shouldGroupBeVisibleByDefault(group) {
-      if (group.key === "general") return false;
+      if (group.key === "general") return true;
+      if (group.key === "general-extra") return false;
       if (group.isDayGroup) {
         const targetIndex = currentWeekMeta.todayIndex >= 0 ? currentWeekMeta.todayIndex : 0;
         return group.dayIndex === targetIndex;
@@ -1055,16 +1070,12 @@
         pin: "",
         full_name: "",
         password_note: "",
-        outlook_extra: "",
-        default_deposit_owner: defaultOwner,
-        default_turnover_owner: defaultOwner
+        outlook_extra: ""
       };
 
       dayConfigs.forEach(day => {
         payload[`${day.prefix}_deposit_done`] = false;
-        payload[`${day.prefix}_deposit_by`] = defaultOwner;
         payload[`${day.prefix}_turnover_done`] = false;
-        payload[`${day.prefix}_turnover_by`] = defaultOwner;
         payload[`${day.prefix}_profit`] = null;
       });
 
@@ -1224,14 +1235,7 @@
 
     function rowOwnedTodayByCurrentUser(row) {
       if (!currentUserMeta) return false;
-      const prefix = getTodayPrefix();
-      if (!prefix) return false;
-      const depositOwner = row[`${prefix}_deposit_by`] || row.default_deposit_owner;
-      const turnoverOwner = row[`${prefix}_turnover_by`] || row.default_turnover_owner;
-      const target = normalizeName(currentUserMeta.name);
-      if (normalizeName(depositOwner) === target) return true;
-      if (normalizeName(turnoverOwner) === target) return true;
-      return false;
+      return normalizeName(row?.owner) === normalizeName(currentUserMeta.name);
     }
 
     function canEditCell(row, col) {
@@ -1243,14 +1247,7 @@
     function isRowOwnedBy(row, memberName) {
       if (!row || !memberName) return false;
       const target = normalizeName(memberName);
-      if (normalizeName(row.default_deposit_owner) === target) return true;
-      if (normalizeName(row.default_turnover_owner) === target) return true;
-
-      return dayConfigs.some(day => {
-        const depositOwner = normalizeName(row[`${day.prefix}_deposit_by`]);
-        const turnoverOwner = normalizeName(row[`${day.prefix}_turnover_by`]);
-        return depositOwner === target || turnoverOwner === target;
-      });
+      return normalizeName(row.owner) === target;
     }
 
     function normalizeName(value) {
@@ -1509,11 +1506,7 @@
       select.onchange = async () => {
         const newValue = select.value || null;
         row[col.key] = newValue;
-        const cascadePayload =
-          col.key === "default_deposit_owner" || col.key === "default_turnover_owner"
-            ? buildCascadePayload(col.key, newValue)
-            : null;
-        await saveSingleCell(row.id, col.key, newValue, cascadePayload);
+        await saveSingleCell(row.id, col.key, newValue);
         updateDayStatusHighlight(rowData || row);
       };
 
@@ -1638,15 +1631,6 @@
       return trimmed === "" ? null : trimmed;
     }
 
-    function buildCascadePayload(defaultKey, value) {
-      const type = defaultKey === "default_deposit_owner" ? "deposit" : "turnover";
-      const changes = {};
-      dayConfigs.forEach(day => {
-        changes[`${day.prefix}_${type}_by`] = value;
-      });
-      return changes;
-    }
-
     function getRowById(rowId) {
       return allRows.find(row => row.id === rowId);
     }
@@ -1706,13 +1690,7 @@
     }
 
     function shouldUseResponsibleSelect(key) {
-      return (
-        key === "owner" ||
-        key === "default_deposit_owner" ||
-        key === "default_turnover_owner" ||
-        key.endsWith("_deposit_by") ||
-        key.endsWith("_turnover_by")
-      );
+      return key === "owner";
     }
 
     async function saveSingleCell(rowId, key, value, extraPayload = null) {
