@@ -268,6 +268,73 @@
     .missing-column {
       background: #fff7ed;
     }
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+    .analytics-card {
+      background: #f9fafb;
+      border-radius: 0.6rem;
+      padding: 0.75rem;
+      border: 1px solid #e5e7eb;
+    }
+    .analytics-card .label {
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+    .analytics-card .value {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #111827;
+      margin-top: 0.2rem;
+    }
+    .analytics-card .meta {
+      font-size: 0.7rem;
+      color: #9ca3af;
+      margin-top: 0.35rem;
+    }
+    .analytics-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+    .analytics-table th,
+    .analytics-table td {
+      padding: 0.45rem 0.5rem;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+    }
+    .analytics-table th {
+      font-weight: 600;
+      background: #f3f4f6;
+      color: #374151;
+    }
+    .bar-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin-top: 0.5rem;
+    }
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .bar-row span {
+      font-size: 0.8rem;
+      color: #374151;
+      width: 110px;
+      flex-shrink: 0;
+    }
+    .bar {
+      height: 22px;
+      background: linear-gradient(90deg, #2563eb, #a855f7);
+      border-radius: 999px;
+      min-width: 4px;
+    }
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -367,12 +434,12 @@
       <section id="board-section">
         <div class="card" id="stats-card">
           <div class="flex-between">
-          <div>
-            <div style="font-size:0.9rem;font-weight:600;">Haftalık İstatistikler</div>
-            <div style="font-size:0.78rem;color:#6b7280;">Tüm değerler Supabase verilerinden hesaplanır</div>
+            <div>
+              <div style="font-size:0.9rem;font-weight:600;">Aylık İstatistikler</div>
+              <div style="font-size:0.78rem;color:#6b7280;">Tüm değerler Supabase verilerinden hesaplanır</div>
+            </div>
+            <div class="badge">Aktif Dönem: <span id="stats-week-label" style="margin-left:0.25rem;"></span></div>
           </div>
-          <div class="badge">Güncellenen Hafta: <span id="stats-week-label" style="margin-left:0.25rem;"></span></div>
-        </div>
         <div class="stats-grid">
           <div class="stat-block">
             <div class="stat-label">Toplam Hesap</div>
@@ -454,6 +521,95 @@
           </table>
         </div>
       </section>
+
+      <section id="analytics-section" class="hidden">
+        <div class="card">
+          <div class="flex-between">
+            <div>
+              <div style="font-size:0.9rem;font-weight:600;">Gelişmiş İstatistikler</div>
+              <div style="font-size:0.78rem;color:#6b7280;">Bu bölüm Aralık 2025 verilerini analiz eder.</div>
+            </div>
+            <div class="badge">Toplam Kayıt: <span id="analytics-total-rows">0</span></div>
+          </div>
+          <div id="analytics-summary" class="analytics-grid"></div>
+        </div>
+
+        <div class="card">
+          <div style="font-size:0.9rem;font-weight:600;">Detaylı Metrikler</div>
+          <div id="analytics-extra-metrics" class="analytics-grid"></div>
+        </div>
+
+        <div class="card">
+          <div style="font-size:0.9rem;font-weight:600;">Sahip Liderlik Tablosu</div>
+          <table class="analytics-table" id="analytics-owner-table">
+            <thead>
+              <tr>
+                <th>Sahip</th>
+                <th>Hesap</th>
+                <th>Para Atma</th>
+                <th>Çevrim</th>
+                <th>Kâr</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div style="font-size:0.9rem;font-weight:600;">Sahip Başına Kâr Grafiği</div>
+          <div id="analytics-owner-chart" class="bar-chart"></div>
+        </div>
+
+        <div class="card">
+          <div style="font-size:0.9rem;font-weight:600;">Günlük Performans</div>
+          <table class="analytics-table" id="analytics-daily-table">
+            <thead>
+              <tr>
+                <th>Gün</th>
+                <th>Para Atma</th>
+                <th>Çevrim</th>
+                <th>Kâr</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div style="font-size:0.9rem;font-weight:600;">Top 5 Hesap</div>
+          <table class="analytics-table" id="analytics-top-accounts">
+            <thead>
+              <tr>
+                <th>Hesap</th>
+                <th>Sahip</th>
+                <th>Para Atma</th>
+                <th>Çevrim</th>
+                <th>Kâr</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div style="font-size:0.9rem;font-weight:600;">Günlük Kâr Projeksiyonu</div>
+          <div style="font-size:0.78rem;color:#6b7280;">
+            Bugüne kadar oluşan kâra ve günlük beklenen hesap sayılarına göre kalan günler için tahmini kâr.
+          </div>
+          <table class="analytics-table" id="analytics-projection-table">
+            <thead>
+              <tr>
+                <th>Gün</th>
+                <th>Hedef Hesap</th>
+                <th>Gerçek Kâr</th>
+                <th>Tahmini Kâr</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <div id="analytics-projection-summary" style="font-size:0.78rem;color:#6b7280;margin-top:0.5rem;"></div>
+        </div>
+      </section>
     </div>
   </div>
 
@@ -483,10 +639,24 @@
 
     // ---- DATA MODEL ----
     // Key'ler Supabase tablosundaki kolon isimleriyle birebir uyumlu:
-    const OPTIONAL_GENERAL_COLUMNS = new Set(["full_name", "password_note", "outlook_extra"]);
+    const OPTIONAL_GENERAL_COLUMNS = new Set([
+      "full_name",
+      "password_note",
+      "outlook_extra",
+      "week_year",
+      "week_number",
+      "week_start_date",
+      "week_end_date",
+      "week_label"
+    ]);
     const baseColumns = [
       { key: "row_order",             label: "Sıra",                           type: "number" },
       { key: "owner",                 label: "Sahibi",                         type: "text" },
+      { key: "week_year",             label: "Hafta Yılı",                     type: "number" },
+      { key: "week_number",           label: "Hafta #",                        type: "number" },
+      { key: "week_start_date",       label: "Hafta Başlangıcı",               type: "text" },
+      { key: "week_end_date",         label: "Hafta Bitişi",                   type: "text" },
+      { key: "week_label",            label: "Hafta Etiketi",                  type: "text" },
       { key: "username",               label: "Kullanıcı Adı",                  type: "text" },
       { key: "email",                  label: "Mail",                           type: "text" },
       { key: "phone",                  label: "Numara",                         type: "text" },
@@ -496,15 +666,9 @@
       { key: "outlook_extra",          label: "Outlook Ekstra Numara",          type: "text" }
     ];
 
-    const dayConfigs = [
-      { prefix: "tue", shortLabel: "Sal" },
-      { prefix: "wed", shortLabel: "Çar" },
-      { prefix: "thu", shortLabel: "Per" },
-      { prefix: "fri", shortLabel: "Cum" },
-      { prefix: "sat", shortLabel: "Cmt" },
-      { prefix: "sun", shortLabel: "Paz" },
-      { prefix: "mon", shortLabel: "Pzt" }
-    ];
+    const DECEMBER_YEAR = 2025;
+    const DECEMBER_MONTH_INDEX = 11; // Aralık
+    const dayConfigs = createDecemberDayConfigs();
 
     const PUSULA_MEMBER_BOARDS = createMemberBoards("pusula");
     const DEFAULT_BOARDS = [
@@ -522,7 +686,14 @@
     let currentWeekMeta = null;
     let columns = [];
     let groupDefinitions = [];
-    const ALWAYS_VISIBLE_KEYS = new Set(["row_order", "owner", "email", "username", "phone", "pin"]);
+    const ALWAYS_VISIBLE_KEYS = new Set([
+      "row_order",
+      "owner",
+      "email",
+      "username",
+      "phone",
+      "pin"
+    ]);
     initializeWeekAndColumns();
 
     let visibleColumns = new Set();
@@ -537,43 +708,67 @@
     let columnControlsVisible = false;
     let extraPayments = [];
 
+    function createDecemberDayConfigs() {
+      const totalDays = 31;
+      const formatter = new Intl.DateTimeFormat("tr-TR", {
+        day: "2-digit",
+        month: "short",
+        weekday: "short"
+      });
+      return Array.from({ length: totalDays }, (_, index) => {
+        const day = index + 1;
+        const date = new Date(Date.UTC(DECEMBER_YEAR, DECEMBER_MONTH_INDEX, day));
+        const prefix = `dec${String(day).padStart(2, "0")}`;
+        return {
+          prefix,
+          shortLabel: formatter.format(date),
+          displayLabel: formatter.format(date),
+          date,
+          iso: formatISODate(date),
+          dayNumber: day
+        };
+      });
+    }
+
     function initializeWeekAndColumns() {
       currentWeekMeta = getCurrentWeekMeta();
       columns = createColumnsForCurrentWeek();
       groupDefinitions = createGroupDefinitions();
       const weekText = currentWeekMeta ? currentWeekMeta.rangeText : "";
+      const labelText = currentWeekMeta ? currentWeekMeta.weekLabel : weekText;
       const rangeEl = document.getElementById("week-range");
       const statsLabelEl = document.getElementById("stats-week-label");
-      if (rangeEl) rangeEl.textContent = weekText ? "Bu Hafta: " + weekText : "";
-      if (statsLabelEl) statsLabelEl.textContent = weekText;
+      if (rangeEl) rangeEl.textContent = weekText ? "Aralık 2025: " + weekText : "";
+      if (statsLabelEl) statsLabelEl.textContent = labelText;
     }
 
     function getCurrentWeekMeta() {
+      const weekDates = dayConfigs.map(day => new Date(day.date));
+      const formatRange = date =>
+        date.toLocaleDateString("tr-TR", { day: "2-digit", month: "short" });
+      const rangeText = `${formatRange(weekDates[0])} - ${formatRange(
+        weekDates[weekDates.length - 1]
+      )}`;
       const today = new Date();
-      const currentDay = today.getDay();
-      const startDayIndex = 2; // Salı
-      const startDate = new Date(today);
-      startDate.setHours(0, 0, 0, 0);
-      const daysSinceStart = (currentDay + 7 - startDayIndex) % 7;
-      startDate.setDate(today.getDate() - daysSinceStart);
-
-      const weekDates = dayConfigs.map((_, index) => {
-        const date = new Date(startDate);
-        date.setDate(startDate.getDate() + index);
-        return date;
-      });
-
-      const formatRange = date => date.toLocaleDateString("tr-TR", { day: "2-digit", month: "short" });
-      const rangeText = `${formatRange(weekDates[0])} - ${formatRange(weekDates[weekDates.length - 1])}`;
-      const todayMidnight = new Date(today);
-      todayMidnight.setHours(0, 0, 0, 0);
-      const yesterdayMidnight = new Date(todayMidnight);
-      yesterdayMidnight.setDate(todayMidnight.getDate() - 1);
-
-      const todayIndex = weekDates.findIndex(date => isSameDay(date, todayMidnight));
-      const yesterdayIndex = weekDates.findIndex(date => isSameDay(date, yesterdayMidnight));
-
-      return { weekDates, rangeText, todayIndex, yesterdayIndex };
+      today.setHours(0, 0, 0, 0);
+      const yesterday = new Date(today);
+      yesterday.setDate(today.getDate() - 1);
+      const todayIndex = weekDates.findIndex(date => isSameDay(date, today));
+      const yesterdayIndex = weekDates.findIndex(date => isSameDay(date, yesterday));
+      const weekLabel = "Aralık 2025";
+      return {
+        weekDates,
+        rangeText,
+        todayIndex,
+        yesterdayIndex,
+        weekLabel,
+        startDate: weekDates[0],
+        endDate: weekDates[weekDates.length - 1],
+        weekStartISO: formatISODate(weekDates[0]),
+        weekEndISO: formatISODate(weekDates[weekDates.length - 1]),
+        weekYear: DECEMBER_YEAR,
+        weekNumber: null
+      };
     }
 
     function getTodayPrefix() {
@@ -587,6 +782,13 @@
       return date.toLocaleDateString("tr-TR", { day: "2-digit", month: "short" });
     }
 
+    function formatISODate(date) {
+      if (!date) return null;
+      const cloned = new Date(date);
+      cloned.setHours(0, 0, 0, 0);
+      return cloned.toISOString().split("T")[0];
+    }
+
     function isSameDay(a, b) {
       return (
         a.getFullYear() === b.getFullYear() &&
@@ -596,13 +798,12 @@
     }
 
     function createColumnsForCurrentWeek() {
-      const dayColumns = dayConfigs.flatMap((day, index) => {
-        const dateLabel = formatDateLabel(currentWeekMeta.weekDates[index]);
-        const baseLabel = `${day.shortLabel} (${dateLabel})`;
+      const dayColumns = dayConfigs.flatMap(day => {
+        const labelSuffix = day.displayLabel || day.shortLabel;
         return [
-          { key: `${day.prefix}_deposit_done`,  label: `Para Atıldı mı?`,     type: "checkbox" },
-          { key: `${day.prefix}_turnover_done`, label: `Çevrim Yapıldı mı?`, type: "checkbox" },
-          { key: `${day.prefix}_profit`,        label: `Kâr`,                 type: "number"   }
+          { key: `${day.prefix}_deposit_done`,  label: `${labelSuffix} - Para Atıldı mı?`,  type: "checkbox" },
+          { key: `${day.prefix}_turnover_done`, label: `${labelSuffix} - Çevrim Yapıldı mı?`, type: "checkbox" },
+          { key: `${day.prefix}_profit`,        label: `${labelSuffix} - Kâr`,              type: "number"   }
         ];
       });
 
@@ -636,18 +837,18 @@
         });
       }
 
-      const dayGroups = dayConfigs.map((day, index) => {
-        const dateLabel = formatDateLabel(currentWeekMeta.weekDates[index]);
+      const dayGroups = dayConfigs.map(day => {
+        const label = day.displayLabel || day.shortLabel;
         return {
           key: day.prefix,
-          label: `${day.shortLabel} (${dateLabel})`,
+          label,
           columns: [
             `${day.prefix}_deposit_done`,
             `${day.prefix}_turnover_done`,
             `${day.prefix}_profit`
           ],
           isDayGroup: true,
-          dayIndex: index
+          dayIndex: day.dayNumber - 1
         };
       });
 
@@ -740,7 +941,7 @@
       }
 
       allRows = data || [];
-      rows = filterRowsForCurrentUser(allRows);
+      recalculateVisibleRows();
       syncAvailableColumns(allRows);
       renderColumnToggles();
       renderTable();
@@ -818,8 +1019,15 @@
       btnExtras.classList.toggle("active", activeSection === "extras");
       btnExtras.onclick = () => switchSection("extras");
 
+      const btnAnalytics = document.createElement("button");
+      btnAnalytics.type = "button";
+      btnAnalytics.textContent = "İstatistikler";
+      btnAnalytics.classList.toggle("active", activeSection === "analytics");
+      btnAnalytics.onclick = () => switchSection("analytics");
+
       nav.appendChild(btnBoards);
       nav.appendChild(btnExtras);
+      nav.appendChild(btnAnalytics);
     }
 
     async function switchSection(section) {
@@ -827,8 +1035,10 @@
       activeSection = section;
       document.getElementById("board-section").classList.toggle("hidden", section !== "boards");
       document.getElementById("extras-section").classList.toggle("hidden", section !== "extras");
+      document.getElementById("analytics-section").classList.toggle("hidden", section !== "analytics");
       renderExtrasNav();
       if (section === "extras") await loadExtraPayments();
+      if (section === "analytics") renderAnalyticsPage();
     }
 
     function getInitialBoard() {
@@ -1062,9 +1272,18 @@
     // ---- ROW ACTIONS ----
     function createEmptyRowPayload() {
       const defaultOwner = currentUserMeta ? currentUserMeta.name : "";
+      if (!currentWeekMeta) {
+        initializeWeekAndColumns();
+      }
+      const weekInfo = currentWeekMeta || getCurrentWeekMeta();
       const payload = {
         owner: defaultOwner,
         row_order: getNextRowOrder(),
+        week_year: weekInfo ? weekInfo.weekYear : null,
+        week_number: weekInfo ? weekInfo.weekNumber : null,
+        week_start_date: weekInfo ? weekInfo.weekStartISO : null,
+        week_end_date: weekInfo ? weekInfo.weekEndISO : null,
+        week_label: weekInfo ? weekInfo.weekLabel : null,
         username: "",
         email: "",
         phone: "",
@@ -1126,7 +1345,7 @@
     function prependTemporaryRow(newRow) {
       if (!newRow) return;
       allRows.unshift(newRow);
-      rows = filterRowsForCurrentUser(allRows);
+      recalculateVisibleRows();
       renderTable();
       refreshStats();
     }
@@ -1141,6 +1360,7 @@
       document.getElementById("stat-today-deposit").textContent = stats.todayDepositDone;
       document.getElementById("stat-today-turnover").textContent = stats.todayTurnoverDone;
       document.getElementById("stat-week-profit").textContent = formatCurrency(stats.weekProfit);
+      renderAnalyticsPage();
     }
 
     function calculateStats() {
@@ -1173,6 +1393,446 @@
       return stats;
     }
 
+    function renderAnalyticsPage() {
+      const section = document.getElementById("analytics-section");
+      if (!section) return;
+      const summaryTarget = document.getElementById("analytics-summary");
+      const extraTarget = document.getElementById("analytics-extra-metrics");
+      const ownerTableBody = document.querySelector("#analytics-owner-table tbody");
+      const ownerChart = document.getElementById("analytics-owner-chart");
+      const dailyTableBody = document.querySelector("#analytics-daily-table tbody");
+      const topAccountsBody = document.querySelector("#analytics-top-accounts tbody");
+      const projectionTableBody = document.querySelector("#analytics-projection-table tbody");
+      const projectionSummary = document.getElementById("analytics-projection-summary");
+      const totalRowsEl = document.getElementById("analytics-total-rows");
+      if (!summaryTarget || !extraTarget || !ownerTableBody || !ownerChart || !dailyTableBody || !topAccountsBody || !projectionTableBody || !projectionSummary) return;
+
+      const dataBuilder = buildAnalyticsData(rows || []);
+      if (!dataBuilder) return;
+      const { totalAccounts, summaryMetrics, extraMetrics, ownerStats, dailyMetrics, topAccounts, projection } = dataBuilder;
+      if (totalRowsEl) totalRowsEl.textContent = totalAccounts;
+      renderMetricGrid(summaryTarget, summaryMetrics);
+      renderMetricGrid(extraTarget, extraMetrics);
+      renderOwnerLeaderboard(ownerTableBody, ownerStats);
+      renderOwnerChart(ownerChart, ownerStats);
+      renderDailyMetricsTable(dailyTableBody, dailyMetrics);
+      renderTopAccountsTable(topAccountsBody, topAccounts);
+      renderProjectionTable(projectionTableBody, projectionSummary, projection);
+    }
+
+    function buildAnalyticsData(data) {
+      const totalAccounts = data.length;
+      const ownerMap = new Map();
+      const ownerSet = new Set();
+      const dayMetrics = dayConfigs.map(day => ({
+        prefix: day.prefix,
+        label: day.displayLabel || day.shortLabel,
+        depositCount: 0,
+        turnoverCount: 0,
+        profit: 0
+      }));
+      let totalDeposits = 0;
+      let totalTurnovers = 0;
+      let totalProfit = 0;
+      let profitableAccounts = 0;
+      let lossAccounts = 0;
+      let zeroProfitAccounts = 0;
+      let todayDepositDone = 0;
+      let todayDepositPending = 0;
+      let todayTurnoverDone = 0;
+      let todayTurnoverPending = 0;
+      const todayPrefix = getTodayPrefix();
+      const topAccountData = [];
+
+      data.forEach(row => {
+        if (row.owner) ownerSet.add(row.owner);
+        let rowProfit = 0;
+        let rowDeposits = 0;
+        let rowTurnovers = 0;
+
+        dayConfigs.forEach((day, index) => {
+          const depositKey = `${day.prefix}_deposit_done`;
+          const turnoverKey = `${day.prefix}_turnover_done`;
+          const profitKey = `${day.prefix}_profit`;
+          const depositDone = !!row[depositKey];
+          const turnoverDone = !!row[turnoverKey];
+          const rawProfit = row[profitKey];
+          const profitValue = typeof rawProfit === "number" ? rawProfit : Number(rawProfit);
+
+          if (depositDone) {
+            totalDeposits += 1;
+            rowDeposits += 1;
+            dayMetrics[index].depositCount += 1;
+          }
+          if (turnoverDone) {
+            totalTurnovers += 1;
+            rowTurnovers += 1;
+            dayMetrics[index].turnoverCount += 1;
+          }
+          if (!Number.isNaN(profitValue) && rawProfit !== null && rawProfit !== "") {
+            totalProfit += profitValue;
+            rowProfit += profitValue;
+            dayMetrics[index].profit += profitValue;
+          }
+
+          if (todayPrefix && day.prefix === todayPrefix) {
+            if (depositDone) todayDepositDone += 1;
+            else todayDepositPending += 1;
+            if (turnoverDone) todayTurnoverDone += 1;
+            else todayTurnoverPending += 1;
+          }
+        });
+
+        if (rowProfit > 0) profitableAccounts += 1;
+        else if (rowProfit < 0) lossAccounts += 1;
+        else zeroProfitAccounts += 1;
+
+        const ownerKey = row.owner || "Sahipsiz";
+        const existing = ownerMap.get(ownerKey) || {
+          owner: ownerKey,
+          accountCount: 0,
+          depositCount: 0,
+          turnoverCount: 0,
+          profit: 0
+        };
+        existing.accountCount += 1;
+        existing.depositCount += rowDeposits;
+        existing.turnoverCount += rowTurnovers;
+        existing.profit += rowProfit;
+        ownerMap.set(ownerKey, existing);
+
+        topAccountData.push({
+          label: row.full_name || row.username || row.email || row.id,
+          owner: row.owner || "—",
+          deposits: rowDeposits,
+          turnovers: rowTurnovers,
+          profit: rowProfit
+        });
+      });
+
+      const ownerStats = Array.from(ownerMap.values()).sort((a, b) => b.profit - a.profit);
+      const topAccounts = topAccountData
+        .sort((a, b) => b.profit - a.profit)
+        .slice(0, 5);
+      const dayWithMostDeposits = dayMetrics.reduce((best, day) =>
+        !best || day.depositCount > best.depositCount ? day : best,
+      null);
+      const dayWithMostProfit = dayMetrics.reduce((best, day) =>
+        !best || day.profit > best.profit ? day : best,
+      null);
+      const topOwner = ownerStats[0];
+
+      const completionTotal = data.length * dayConfigs.length * 2 || 1;
+      const completionRate = ((totalDeposits + totalTurnovers) / completionTotal) * 100;
+
+      const summaryMetrics = [
+        { label: "Toplam Hesap", value: totalAccounts },
+        { label: "Aktif Sahip", value: ownerSet.size },
+        { label: "Tamamlanan Para Atma", value: totalDeposits },
+        { label: "Tamamlanan Çevrim", value: totalTurnovers },
+        { label: "Toplam Kâr", value: formatCurrency(totalProfit) },
+        {
+          label: "Hesap Başına Kâr",
+          value: formatCurrency(totalAccounts ? totalProfit / totalAccounts : 0)
+        },
+        {
+          label: "Günlük Ortalama Kâr",
+          value: formatCurrency(dayConfigs.length ? totalProfit / dayConfigs.length : 0)
+        },
+        {
+          label: "Tamamlanma Oranı",
+          value: `${completionRate.toFixed(1)}%`,
+          meta: "Para Atma + Çevrim"
+        }
+      ];
+
+      const extraMetrics = [
+        {
+          label: "Günlük Para Atma Ort.",
+          value: dayConfigs.length ? (totalDeposits / dayConfigs.length).toFixed(1) : "0"
+        },
+        {
+          label: "Günlük Çevrim Ort.",
+          value: dayConfigs.length ? (totalTurnovers / dayConfigs.length).toFixed(1) : "0"
+        },
+        { label: "Kâr Yazan Hesap", value: profitableAccounts },
+        { label: "Zarar Yazan Hesap", value: lossAccounts },
+        { label: "Sıfır Kâr Hesap", value: zeroProfitAccounts },
+        { label: "Bugün Yapılan Para Atma", value: todayDepositDone },
+        { label: "Bugün Bekleyen Para Atma", value: todayDepositPending },
+        { label: "Bugün Yapılan Çevrim", value: todayTurnoverDone },
+        { label: "Bugün Bekleyen Çevrim", value: todayTurnoverPending },
+        {
+          label: "En Yoğun Gün",
+          value: dayWithMostDeposits ? dayWithMostDeposits.label : "—",
+          meta: dayWithMostDeposits ? `${dayWithMostDeposits.depositCount} para atma` : ""
+        },
+        {
+          label: "En Kârlı Gün",
+          value: dayWithMostProfit ? dayWithMostProfit.label : "—",
+          meta: dayWithMostProfit ? formatCurrency(dayWithMostProfit.profit) : ""
+        },
+        {
+          label: "En Kârlı Sahip",
+          value: topOwner ? topOwner.owner : "—",
+          meta: topOwner ? formatCurrency(topOwner.profit) : ""
+        },
+        {
+          label: "En Kârlı Hesap",
+          value: topAccounts[0] ? topAccounts[0].label : "—",
+          meta: topAccounts[0] ? formatCurrency(topAccounts[0].profit) : ""
+        }
+      ];
+
+      const projection = buildProjection(dayMetrics);
+
+      return {
+        totalAccounts,
+        summaryMetrics,
+        extraMetrics,
+        ownerStats,
+        dailyMetrics: dayMetrics,
+        topAccounts,
+        projection
+      };
+    }
+
+    function buildProjection(dailyMetrics) {
+      if (!Array.isArray(dailyMetrics) || !dailyMetrics.length) return null;
+      const EXPECTED_ACCOUNTS = {
+        sal: 77,
+        çar: 100,
+        per: 100,
+        cum: 100,
+        cmt: 100,
+        paz: 150,
+        pzt: 150
+      };
+      const todayIndex = currentWeekMeta.todayIndex >= 0 ? currentWeekMeta.todayIndex : -1;
+      const totalActualProfit = dailyMetrics.reduce(
+        (sum, day) => sum + (Number(day.profit) || 0),
+        0
+      );
+      const totalActualDeposits = dailyMetrics.reduce(
+        (sum, day) => sum + (Number(day.depositCount) || 0),
+        0
+      );
+      const perAccountProfit =
+        totalActualDeposits > 0 ? totalActualProfit / totalActualDeposits : 0;
+
+      let accumulatedActual = 0;
+      let accumulatedProjected = 0;
+      const rows = dailyMetrics.map((day, index) => {
+        const weekdayShort = day.label.split(" ")[0]?.toLowerCase() || "";
+        const expectedCount = EXPECTED_ACCOUNTS[weekdayShort] || 0;
+        const actualProfit = Number(day.profit) || 0;
+        const projectedProfit =
+          index <= todayIndex && actualProfit
+            ? actualProfit
+            : expectedCount * perAccountProfit;
+
+        accumulatedActual += actualProfit;
+        accumulatedProjected += projectedProfit || 0;
+
+        return {
+          label: day.label,
+          expectedCount,
+          actualProfit,
+          projectedProfit,
+          isPast: index < todayIndex,
+          isToday: index === todayIndex,
+          isFuture: index > todayIndex
+        };
+      });
+
+      return {
+        rows,
+        totalActualProfit: accumulatedActual,
+        totalExpectedProfit: accumulatedProjected
+      };
+    }
+
+    function renderMetricGrid(container, metrics) {
+      container.innerHTML = "";
+      if (!metrics.length) {
+        container.innerHTML = "<div style='font-size:0.8rem;color:#6b7280;'>Veri bulunamadı.</div>";
+        return;
+      }
+      metrics.forEach(metric => {
+        const card = document.createElement("div");
+        card.className = "analytics-card";
+
+        const label = document.createElement("div");
+        label.className = "label";
+        label.textContent = metric.label;
+
+        const value = document.createElement("div");
+        value.className = "value";
+        value.textContent = metric.value ?? "—";
+
+        card.appendChild(label);
+        card.appendChild(value);
+
+        if (metric.meta) {
+          const meta = document.createElement("div");
+          meta.className = "meta";
+          meta.textContent = metric.meta;
+          card.appendChild(meta);
+        }
+
+        container.appendChild(card);
+      });
+    }
+
+    function renderOwnerLeaderboard(tbody, ownerStats) {
+      tbody.innerHTML = "";
+      if (!ownerStats.length) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 5;
+        td.textContent = "İstatistik oluşturmak için yeterli veri yok.";
+        td.style.textAlign = "center";
+        td.style.color = "#6b7280";
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+        return;
+      }
+      ownerStats.forEach(entry => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${entry.owner}</td>
+          <td>${entry.accountCount}</td>
+          <td>${entry.depositCount}</td>
+          <td>${entry.turnoverCount}</td>
+          <td>${formatCurrency(entry.profit)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderOwnerChart(container, ownerStats) {
+      container.innerHTML = "";
+      if (!ownerStats.length) {
+        const message = document.createElement("div");
+        message.style.fontSize = "0.8rem";
+        message.style.color = "#6b7280";
+        message.textContent = "Grafik için veri bulunamadı.";
+        container.appendChild(message);
+        return;
+      }
+      const topOwners = ownerStats.slice(0, 6);
+      const maxProfit = Math.max(...topOwners.map(item => Math.abs(item.profit)), 1);
+      topOwners.forEach(owner => {
+        const row = document.createElement("div");
+        row.className = "bar-row";
+
+        const label = document.createElement("span");
+        label.textContent = owner.owner;
+        row.appendChild(label);
+
+        const bar = document.createElement("div");
+        bar.className = "bar";
+        bar.style.width = `${(Math.abs(owner.profit) / maxProfit) * 100}%`;
+        row.appendChild(bar);
+
+        const value = document.createElement("span");
+        value.textContent = formatCurrency(owner.profit);
+        value.style.width = "100px";
+        value.style.textAlign = "right";
+        value.style.color = "#111827";
+        row.appendChild(value);
+
+        container.appendChild(row);
+      });
+    }
+
+    function renderDailyMetricsTable(tbody, dailyMetrics) {
+      tbody.innerHTML = "";
+      if (!dailyMetrics.length) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 4;
+        td.textContent = "Günlük performans için veri yok.";
+        td.style.textAlign = "center";
+        td.style.color = "#6b7280";
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+        return;
+      }
+      dailyMetrics.forEach(day => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${day.label}</td>
+          <td>${day.depositCount}</td>
+          <td>${day.turnoverCount}</td>
+          <td>${formatCurrency(day.profit)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderTopAccountsTable(tbody, topAccounts) {
+      tbody.innerHTML = "";
+      if (!topAccounts.length) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 5;
+        td.textContent = "Top hesap listesi için veri yok.";
+        td.style.textAlign = "center";
+        td.style.color = "#6b7280";
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+        return;
+      }
+      topAccounts.forEach(account => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${account.label}</td>
+          <td>${account.owner}</td>
+          <td>${account.deposits}</td>
+          <td>${account.turnovers}</td>
+          <td>${formatCurrency(account.profit)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderProjectionTable(tbody, summaryEl, projection) {
+      tbody.innerHTML = "";
+      if (!projection || !projection.rows.length) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 4;
+        td.textContent = "Projeksiyon oluşturmak için yeterli veri yok.";
+        td.style.textAlign = "center";
+        td.style.color = "#6b7280";
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+        summaryEl.textContent = "";
+        return;
+      }
+
+      projection.rows.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.label}</td>
+          <td>${row.expectedCount || "—"}</td>
+          <td>${formatCurrency(row.actualProfit || 0)}</td>
+          <td>${formatCurrency(row.projectedProfit || 0)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const diff = projection.totalExpectedProfit - projection.totalActualProfit;
+      const diffText =
+        diff >= 0
+          ? `Mevcut kârın üzerine +${formatCurrency(diff)} bekleniyor.`
+          : `${formatCurrency(Math.abs(diff))} kadar gerideyiz.`;
+      summaryEl.textContent = `Toplam Gerçek Kâr: ${formatCurrency(
+        projection.totalActualProfit
+      )} | Tahmini Ay Sonu: ${formatCurrency(projection.totalExpectedProfit)}. ${diffText}`;
+    }
+
     function formatCurrency(value) {
       if (!value) return "₺0";
       return new Intl.NumberFormat("tr-TR", {
@@ -1202,6 +1862,10 @@
       };
     }
 
+    function recalculateVisibleRows() {
+      rows = filterRowsForCurrentUser(allRows);
+    }
+
     function filterRowsForCurrentUser(data) {
       const list = data || [];
       return applyBoardFilter(list);
@@ -1222,6 +1886,7 @@
 
       return collection;
     }
+
 
     function canEditRow(row) {
       if (!currentUserMeta) return false;
@@ -1615,7 +2280,7 @@
       }
 
       allRows = allRows.filter(r => r.id !== row.id);
-      rows = filterRowsForCurrentUser(allRows);
+      recalculateVisibleRows();
       refreshStats();
       renderTable();
     }
@@ -1732,7 +2397,7 @@
       const idxAll = allRows.findIndex(r => r.id === updatedRow.id);
       if (idxAll >= 0) allRows[idxAll] = updatedRow;
       else allRows.push(updatedRow);
-      rows = filterRowsForCurrentUser(allRows);
+      recalculateVisibleRows();
       syncAvailableColumns(allRows);
     }
 
